@@ -35,11 +35,14 @@ cv_train <- vfold_cv(train_data, v = 10, repeats = 5, strata = out)
 rec_obj <- recipe(HU_1YR ~ ., data = df)
 imputed <- rec_obj %>%
   step_knnimpute(all_predictors(),all_outcomes()) 
-ind_vars <- imputed %>%
-  step_dummy(all_predictors(), -all_numeric()) 
-standardized <- ind_vars %>%
+standardized <- imputed %>%
   step_center(all_predictors())  %>%
-  step_scale(all_predictors()) 
+  step_scale(all_predictors()) %>%
+  themis::step_smote (HU_1YR)
+
+data_prep <- prep(standardized) %>%
+bake(new_data = NULL)
+
 cores <- parallel::detectCores()
 cores
 #SVM
@@ -159,3 +162,9 @@ autoplot(lr_res)
 https://stacks.tidymodels.org/articles/classification.html
 
 https://blog--simonpcouch.netlify.app/blog/gentle-intro-stacks/
+  
+  https://www.tidyverse.org/blog/2020/02/themis-0-1-0/
+  
+  https://juliasilge.com/blog/himalayan-climbing/
+  
+  https://www.tidymodels.org/learn/models/sub-sampling/
