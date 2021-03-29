@@ -1,12 +1,12 @@
 setwd(paste(dirname(rstudioapi::getActiveDocumentContext()$path),"",sep = ""))
 load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
+
 library(haven)
 library(tidyverse)
 library(tidymodels)
 
 #data_Atos <- read_sav("HU OD 1 5 10y model.sav")
 #View(data_Atos)
-
 
 Out_Comes=c("STA_1YR","STA_5YR","MTA_5YR","STA_10YR","MTA_10YR","LTA_10yr","HU_1YR","HU_5YR","HU_10YR","OD_upto1YR","OD_upto5YR","OD_upto10YR","DEATH_1YR","DEATH_5YR","DEATH_10YR","DEATH_15YR")
 #colnames(data_Atos)%in%preds
