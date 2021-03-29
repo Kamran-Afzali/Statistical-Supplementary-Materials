@@ -4,6 +4,7 @@ load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
 library(haven)
 library(tidyverse)
 library(tidymodels)
+library(stacks)
 
 #data_Atos <- read_sav("HU OD 1 5 10y model.sav")
 #View(data_Atos)
@@ -159,12 +160,25 @@ lr_res %>%
 autoplot(lr_res)
 
 #Stack package
+model_ensemble <- 
+  # initialize the stack
+  stacks() %>%
+  # add candidate members
+  add_candidates(svm_res) %>%
+  add_candidates(rf_res) %>%
+  #add_candidates(lr_res) %>%
+  # determine how to combine their predictions
+  blend_predictions() %>%
+  # fit the candidates with nonzero stacking coefficients
+  fit_members()
+
+
 https://stacks.tidymodels.org/articles/classification.html
 
 https://blog--simonpcouch.netlify.app/blog/gentle-intro-stacks/
   
-  https://www.tidyverse.org/blog/2020/02/themis-0-1-0/
+https://www.tidyverse.org/blog/2020/02/themis-0-1-0/
   
-  https://juliasilge.com/blog/himalayan-climbing/
+https://juliasilge.com/blog/himalayan-climbing/
   
-  https://www.tidymodels.org/learn/models/sub-sampling/
+https://www.tidymodels.org/learn/models/sub-sampling/
