@@ -172,6 +172,22 @@ model_ensemble <-
   # fit the candidates with nonzero stacking coefficients
   fit_members()
 
+model_ensemble
+
+theme_set(theme_bw())
+autoplot(model_ensemble)
+
+autoplot(model_ensemble, type = "members")
+
+
+autoplot(model_ensemble, type = "weights")
+
+collect_parameters(model_ensemble, "svm_res")
+
+df2=df[,-1]
+ens_mod_pred <-
+  data_prep%>%
+  bind_cols(predict(model_ensemble, ., type = "prob"))
 
 https://stacks.tidymodels.org/articles/classification.html
 
