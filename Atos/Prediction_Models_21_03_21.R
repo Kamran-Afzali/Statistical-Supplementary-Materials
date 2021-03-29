@@ -68,7 +68,7 @@ set.seed(345)
 svm_res <- 
   svm_workflow %>% 
   tune_grid(grid = 25,
-            control = control_grid(save_pred = TRUE),
+            control = control_stack_grid(),
             metrics = metric_set(roc_auc), 
             resamples = cv_train)
 
@@ -106,8 +106,8 @@ rf_workflow
 set.seed(345)
 rf_res <- 
   rf_workflow %>% 
-  tune_grid(grid = 25,
-            control = control_grid(save_pred = TRUE),
+  tune_grid(grid = 10,
+            control = control_stack_grid(),
             metrics = metric_set(roc_auc), 
             resamples = cv_train)
 
@@ -142,7 +142,7 @@ set.seed(345)
 lr_res <- 
   lr_workflow %>% 
   tune_grid(grid = 25,
-            control = control_grid(save_pred = TRUE),
+            control = control_stack_grid(),
             metrics = metric_set(roc_auc), 
             resamples = cv_train)
 
@@ -166,7 +166,7 @@ model_ensemble <-
   # add candidate members
   add_candidates(svm_res) %>%
   add_candidates(rf_res) %>%
-  #add_candidates(lr_res) %>%
+  add_candidates(lr_res) %>%
   # determine how to combine their predictions
   blend_predictions() %>%
   # fit the candidates with nonzero stacking coefficients
