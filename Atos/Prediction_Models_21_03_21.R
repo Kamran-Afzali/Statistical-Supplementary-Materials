@@ -184,10 +184,12 @@ autoplot(model_ensemble, type = "weights")
 
 collect_parameters(model_ensemble, "svm_res")
 
-df2=df[,-1]
+
 ens_mod_pred <-
   data_prep%>%
   bind_cols(predict(model_ensemble, ., type = "prob"))
+
+#References
 
 https://stacks.tidymodels.org/articles/classification.html
 
