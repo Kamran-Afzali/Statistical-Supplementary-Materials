@@ -5,7 +5,7 @@ library(haven)
 library(tidyverse)
 library(tidymodels)
 library(stacks)
-
+library(vip)
 #data_Atos <- read_sav("HU OD 1 5 10y model.sav")
 #View(data_Atos)
 
@@ -78,13 +78,26 @@ svm_best <-
   svm_res %>% 
   select_best(metric = "roc_auc")
 
-svm_best
+
 
 svm_res %>% 
   show_best(metric = "roc_auc")
 
 autoplot(svm_res)
 
+final_svm <- finalize_model(
+  svm_mod,
+  svm_best
+)
+
+final_svm
+
+final_svm %>%
+  set_engine("kernlab", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vip(geom = "point")
 
 
 #RF
@@ -123,6 +136,21 @@ rf_res %>%
   show_best(metric = "roc_auc")
 
 autoplot(rf_res)
+
+final_rf <- finalize_model(
+  rf_mod,
+  rf_best
+)
+
+final_rf
+
+final_rf %>%
+  set_engine("ranger", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vip(geom = "point")
+
 #Elasticent
 
 lr_mod <- 
@@ -158,6 +186,21 @@ lr_res %>%
   show_best(metric = "roc_auc")
 
 autoplot(lr_res)
+
+final_lr <- finalize_model(
+  lr_mod,
+  lr_best
+)
+
+final_lr
+
+final_lr %>%
+  set_engine("glmnet", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vip()
+
 
 #Stack package
 model_ensemble <- 
