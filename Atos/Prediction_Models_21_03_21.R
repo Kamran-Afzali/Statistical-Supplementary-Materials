@@ -6,6 +6,8 @@ library(tidyverse)
 library(tidymodels)
 library(stacks)
 library(vip)
+library(pdp)
+library(sparkline)
 #data_Atos <- read_sav("HU OD 1 5 10y model.sav")
 #View(data_Atos)
 
@@ -97,7 +99,9 @@ final_svm %>%
   fit(HU_1YR ~ .,
       data = data_prep
   ) %>%
-  vip(geom = "point")
+  vi( method = "permute", nsim = 10, target = "HU_1YR",
+     pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = data_prep)%>%
+  mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
 
 
 #RF
@@ -149,7 +153,17 @@ final_rf %>%
   fit(HU_1YR ~ .,
       data = data_prep
   ) %>%
-  vip(geom = "point")
+  vi()%>%mutate(rank = dense_rank(desc(Importance)),
+             mod="rf")%>% select(Variable,rank,mod)
+
+pfun <- function(object, newdata) predict(object, data = newdata)$predictions
+final_rf %>%
+  set_engine("ranger", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vi(method = "permute", nsim = 10, target = "HU_1YR",
+     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = data_prep)
 
 #Elasticent
 
@@ -199,7 +213,8 @@ final_lr %>%
   fit(HU_1YR ~ .,
       data = data_prep
   ) %>%
-  vip()
+  vi()%>%
+  mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
 
 
 #Stack package
@@ -231,6 +246,54 @@ collect_parameters(model_ensemble, "svm_res")
 ens_mod_pred <-
   data_prep%>%
   bind_cols(predict(model_ensemble, ., type = "prob"))
+
+
+##importance graph
+
+
+
+svmvip=final_svm %>%
+  set_engine("kernlab", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vi( method = "permute", nsim = 10, target = "HU_1YR",
+      pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = data_prep)%>%
+  mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
+
+
+rfvip=final_rf %>%
+  set_engine("ranger", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vi()%>%mutate(rank = dense_rank(desc(Importance)),
+                mod="rf")%>% select(Variable,rank,mod)
+
+
+lrvip=final_lr %>%
+  set_engine("glmnet", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = data_prep
+  ) %>%
+  vi()%>%
+  mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
+
+vips=svmvip%>%
+  bind_rows(rfvip)%>%
+  bind_rows(lrvip)%>%
+  group_by(Variable)%>%
+  summarise(importance=mean(rank))%>%
+  arrange(importance)
+
+vips$Variable=as.factor(vips$Variable)
+  p=ggplot(vips,aes(x=reorder(Variable, -importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    xlab("Predictor")+ ylab("Importance Rank")
+
+  ggplotly(p)
 
 #References
 
