@@ -1,0 +1,28 @@
+---
+title: "Example"
+output: html_document
+---
+
+# nontb content
+
+## sec 1
+dkgkgkdkskakakdfg
+
+
+
+## Tabbed Example {.tabset}
+
+### Tab1
+
+```{r}
+summary(cars)
+```
+
+### Tab2
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+## sec 2
+dkgkgkdkskakakdfg
