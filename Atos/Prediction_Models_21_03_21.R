@@ -8,6 +8,8 @@ library(stacks)
 library(vip)
 library(pdp)
 library(sparkline)
+library(plotly)
+
 #data_Atos <- read_sav("HU OD 1 5 10y model.sav")
 #View(data_Atos)
 
