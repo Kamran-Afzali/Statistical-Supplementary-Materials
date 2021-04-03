@@ -28,7 +28,8 @@ table(Data_merged$HU_1YR)
 out="HU_1YR"
 
 df=Data_merged%>%
-  select(c(out,preds))
+  select(c(out,preds))%>% 
+  drop_na()
 
 df$HU_1YR=as.factor(df$HU_1YR)
 
@@ -37,16 +38,17 @@ train_data <- training(df_split)
 test_data <- testing(df_split)
 cv_train <- vfold_cv(train_data, v = 10, repeats = 5, strata = out)
 
-rec_obj <- recipe(HU_1YR ~ ., data = df)
-imputed <- rec_obj %>%
-  step_knnimpute(all_predictors(),all_outcomes()) 
-standardized <- imputed %>%
+rec_obj <- recipe(HU_1YR ~ ., data = train_data)
+standardized <- rec_obj %>%
   step_center(all_predictors())  %>%
   step_scale(all_predictors()) %>%
   themis::step_smote (HU_1YR)
 
-data_prep <- prep(standardized) %>%
+train_preped <- prep(standardized) %>%
 bake(new_data = NULL)
+
+test_preped <-  prep(standardized) %>%
+  bake(new_data = test_data)
 
 cores <- parallel::detectCores()
 cores
@@ -99,12 +101,19 @@ final_svm
 final_svm %>%
   set_engine("kernlab", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi( method = "permute", nsim = 10, target = "HU_1YR",
      pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = data_prep)%>%
   mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
 
+final_svm %>%
+  set_engine("kernlab", importance = "permutation") %>%
+  fit(HU_1YR ~ .,
+      data = train_preped
+  ) %>% predict(train_preped)%>% 
+  bind_cols(train_preped %>% select(HU_1YR))%>% 
+  accuracy(truth = HU_1YR, .pred_class)
 
 #RF
 rf_mod <- 
@@ -153,7 +162,7 @@ final_rf
 final_rf %>%
   set_engine("ranger", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi()%>%mutate(rank = dense_rank(desc(Importance)),
              mod="rf")%>% select(Variable,rank,mod)
@@ -162,7 +171,7 @@ pfun <- function(object, newdata) predict(object, data = newdata)$predictions
 final_rf %>%
   set_engine("ranger", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi(method = "permute", nsim = 10, target = "HU_1YR",
      pred_wrapper = pfun, metric = "auc", reference_class = 1, train = data_prep)
@@ -213,7 +222,7 @@ final_lr
 final_lr %>%
   set_engine("glmnet", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi()%>%
   mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
@@ -246,8 +255,11 @@ collect_parameters(model_ensemble, "svm_res")
 
 
 ens_mod_pred <-
-  data_prep%>%
-  bind_cols(predict(model_ensemble, ., type = "prob"))
+  test_preped%>%
+  bind_cols(predict(model_ensemble, ., type = "class"))
+
+
+ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)
 
 
 ##importance graph
@@ -297,6 +309,7 @@ vips$Variable=as.factor(vips$Variable)
 
   ggplotly(p)
 
+save(vips,ens_mod_pred,model_ensemble,  file = "HU_1YR_vips.RData")
 #References
 
 https://stacks.tidymodels.org/articles/classification.html
