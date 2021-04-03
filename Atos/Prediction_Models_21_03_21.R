@@ -287,7 +287,7 @@ vips=svmvip%>%
   arrange(importance)
 
 vips$Variable=as.factor(vips$Variable)
-  p=ggplot(vips,aes(x=reorder(Variable, -importance),y=importance))+
+  p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
