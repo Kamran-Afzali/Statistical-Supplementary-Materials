@@ -1,28 +1,101 @@
 ---
-title: "Example"
+title: "Atos Project"
 output: html_document
 ---
 
 # nontb content
 
-## sec 1
+## An overview of this report
+```{r include=FALSE}
+library(haven)
+library(tidyverse)
+library(tidymodels)
+library(stacks)
+library(vip)
+library(pdp)
+library(sparkline)
+library(plotly)
+```
+
 dkgkgkdkskakakdfg
 
 
 
-## Tabbed Example {.tabset}
+## Past month heroin use {.tabset}
 
-### Tab1
+### HU_1YR
 
 ```{r}
-summary(cars)
+
+load("~/Statistical-Supplementary-Materials/Atos/HU_1YR_vips.RData")
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
+
+ggplotly(p)
+rm(list = ls())
 ```
 
-### Tab2
+### HU_5YR
 
 ```{r, echo=FALSE}
-plot(cars)
+load("~/Statistical-Supplementary-Materials/Atos/HU_5YR_vips.RData")
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
+
+ggplotly(p)
+rm(list = ls())
 ```
 
-## sec 2
-dkgkgkdkskakakdfg
+
+### HU_10YR
+
+```{r, echo=FALSE}
+load("~/Statistical-Supplementary-Materials/Atos/HU_10YR_vips.RData")
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
+
+ggplotly(p)
+rm(list = ls())
+```
+
+## Remission {.tabset}
+
+### STA_1YR
+
+### STA_5YR
+
+### MTA_5YR
+
+### STA_10YR
+
+### MTA_10YR
+
+### LTA_10yr
+
+## OD {.tabset}
+
+### DEATH_1YR
+
+### DEATH_5YR
+
+### DEATH_10YR
+
+
+## Mortality {.tabset}
+
+### DEATH_1YR
+
+### DEATH_5YR
+
+### DEATH_10YR
+
+### DEATH_15YR
