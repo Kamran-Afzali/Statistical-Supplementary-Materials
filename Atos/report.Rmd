@@ -1,9 +1,10 @@
 ---
 title: "Atos Project"
-output: html_document
+output: rmdformats::readthedown
+
 ---
 
-# nontb content
+# Performance and Feature Importance Report
 
 ## An overview of this report
 ```{r include=FALSE}
@@ -17,7 +18,7 @@ library(sparkline)
 library(plotly)
 ```
 
-dkgkgkdkskakakdfg
+
 
 
 
@@ -25,9 +26,17 @@ dkgkgkdkskakakdfg
 
 ### HU_1YR
 
-```{r}
+#### Performance
+```{r, echo=FALSE}
 
 load("~/Statistical-Supplementary-Materials/Atos/HU_1YR_vips.RData")
+ ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))%>%knitr::kable()
+
+```
+
+
+#### Feature Importance
+```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
@@ -40,8 +49,17 @@ rm(list = ls())
 
 ### HU_5YR
 
+#### Performance
 ```{r, echo=FALSE}
 load("~/Statistical-Supplementary-Materials/Atos/HU_5YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_5YR, .pred_class))%>%knitr::kable()
+```
+
+
+#### Feature Importance
+
+
+```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
@@ -55,8 +73,19 @@ rm(list = ls())
 
 ### HU_10YR
 
+#### Performance
+
 ```{r, echo=FALSE}
 load("~/Statistical-Supplementary-Materials/Atos/HU_10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))%>%knitr::kable()
+```
+
+
+#### Feature Importance
+
+
+
+```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
@@ -71,31 +100,137 @@ rm(list = ls())
 
 ### STA_1YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### STA_5YR
+
+#### Performance
+
+
+
+#### Feature Importance
+
+
 
 ### MTA_5YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### STA_10YR
+
+#### Performance
+
+
+#### Feature Importance
+
+
 
 ### MTA_10YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### LTA_10yr
+
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
+
 
 ## OD {.tabset}
 
+
 ### DEATH_1YR
+
+#### Performance
+
+
+
+#### Feature Importance
+
+
 
 ### DEATH_5YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### DEATH_10YR
+
+#### Performance
+
+
+
+#### Feature Importance
+
+
 
 
 ## Mortality {.tabset}
 
+
 ### DEATH_1YR
+
+#### Performance
+
+
+
+#### Feature Importance
+
+
 
 ### DEATH_5YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### DEATH_10YR
 
+#### Performance
+
+
+
+#### Feature Importance
+
+
+
 ### DEATH_15YR
+
+#### Performance
+
+
+
+#### Feature Importance
+

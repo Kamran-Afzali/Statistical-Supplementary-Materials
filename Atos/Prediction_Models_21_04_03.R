@@ -260,6 +260,8 @@ ens_mod_pred <-
 
 
 ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)
+ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_5YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_5YR, .pred_class))
 
 
 ##importance graph

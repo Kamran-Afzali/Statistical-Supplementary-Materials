@@ -259,10 +259,11 @@ ens_mod_pred <-
   bind_cols(predict(model_ensemble, ., type = "class"))
 
 
-ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)
+ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 
 
-##importance graph
+##importance graroc_auc()##importance graph
 
 
 
