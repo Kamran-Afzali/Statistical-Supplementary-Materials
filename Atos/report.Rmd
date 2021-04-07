@@ -7,6 +7,49 @@ output: rmdformats::readthedown
 # Performance and Feature Importance Report
 
 ## An overview of this report
+
+This report presents the performance and feature importance of prediction models of four outcomes:
+
++ Remission
+
++ Past month heroin use
+
++ OD
+
++ Mortality
+
+Also to address two questions:
+
+1.	Do you agree with these predictors or should we add more?
+```{r, echo=FALSE}
+
+load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
+
+preds
+
+```
+
+2.	This is the list of the columns of HU OD 1 5 10y model.sav
+```{r echo=FALSE}
+colnames( data_Atos)
+
+``` 
+And this is the list of the outcomes
+```{r echo=FALSE}
+Out_Comes=c("STA_1YR","STA_5YR","MTA_5YR","STA_10YR","MTA_10YR","LTA_10yr","HU_1YR","HU_5YR","HU_10YR","OD_upto1YR","OD_upto5YR","OD_upto10YR","DEATH_1YR","DEATH_5YR","DEATH_10YR","DEATH_15YR")
+
+Out_Comes
+``` 
+Some are available in the file 
+```{r echo=FALSE}
+Out_Comes[(Out_Comes%in%colnames( data_Atos))]
+``` 
+Some are not available in the file
+```{r echo=FALSE}
+Out_Comes[!(Out_Comes%in%colnames( data_Atos))]
+rm(list = ls())
+``` 
+
 ```{r include=FALSE}
 library(haven)
 library(tidyverse)
