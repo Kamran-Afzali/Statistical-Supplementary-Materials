@@ -1,5 +1,5 @@
 setwd(paste(dirname(rstudioapi::getActiveDocumentContext()$path),"",sep = ""))
-load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
+load("~/OneDrive - Universite de Montreal/Usydney/data_04_2021.RData")
 
 library(haven)
 library(tidyverse)
@@ -10,20 +10,9 @@ library(pdp)
 library(sparkline)
 library(plotly)
 
-#data_Atos <- read_sav("HU OD 1 5 10y model.sav")
-#View(data_Atos)
-
-Out_Comes=c("STA_1YR","STA_5YR","MTA_5YR","STA_10YR","MTA_10YR","LTA_10yr","HU_1YR","HU_5YR","HU_10YR","OD_upto1YR","OD_upto5YR","OD_upto10YR","DEATH_1YR","DEATH_5YR","DEATH_10YR","DEATH_15YR")
-#colnames(data_Atos)%in%preds
-
-#DATA$id0101=as.numeric(as.character(DATA$id0101))
-#data_Atos$id0101=as.numeric(as.character(data_Atos$id0101))
-#merge the data 
-Data_merged=DATA %>% inner_join(data_Atos, by = "id0101")
 
 
-#check the pred input with new Excel file
-##good for now but have to check later!
+
 table(Data_merged$HU_5YR)
 out="HU_5YR"
 
@@ -32,6 +21,12 @@ df=Data_merged%>%
   drop_na()
 
 df$HU_5YR=as.factor(df$HU_5YR)
+
+
+
+df <- recipe( ~ ., data = df) %>%
+  step_upsample(HU_5YR) %>%
+  prep(training = df) %>% bake(new_data = NULL)
 
 df_split <- initial_split(df)
 train_data <- training(df_split)
@@ -42,14 +37,15 @@ rec_obj <- recipe(HU_5YR ~ ., data = train_data)
 standardized <- rec_obj %>%
   step_center(all_predictors())  %>%
   step_scale(all_predictors()) %>%
-  themis::step_smote (HU_5YR)
+  themis::step_upsample (HU_5YR)
 
 train_preped <- prep(standardized) %>%
   bake(new_data = NULL)
 
 test_preped <-  prep(standardized) %>%
   bake(new_data = test_data)
-
+ 
+table(test_preped$HU_5YR)
 cores <- parallel::detectCores()
 cores
 #SVM

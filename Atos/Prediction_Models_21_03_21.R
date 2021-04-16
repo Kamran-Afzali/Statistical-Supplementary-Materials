@@ -1,5 +1,5 @@
 setwd(paste(dirname(rstudioapi::getActiveDocumentContext()$path),"",sep = ""))
-load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
+load("~/OneDrive - Universite de Montreal/Usydney/data_04_2021.RData")
 
 library(haven)
 library(tidyverse)
@@ -10,25 +10,7 @@ library(pdp)
 library(sparkline)
 library(plotly)
 
-#data_Atos <- read_sav("HU OD 1 5 10y model.sav")
-#View(data_Atos)
-colnames( data_Atos)
-Out_Comes=c("STA_1YR","STA_5YR","MTA_5YR","STA_10YR","MTA_10YR","LTA_10yr","HU_1YR","HU_5YR","HU_10YR","OD_upto1YR","OD_upto5YR","OD_upto10YR","DEATH_1YR","DEATH_5YR","DEATH_10YR","DEATH_15YR")
 
-Out_Comes[!(Out_Comes%in%colnames( data_Atos))]
-Out_Comes[(Out_Comes%in%colnames( data_Atos))]
-
-preds
-#colnames(data_Atos)%in%preds
-
-#DATA$id0101=as.numeric(as.character(DATA$id0101))
-#data_Atos$id0101=as.numeric(as.character(data_Atos$id0101))
-#merge the data 
-Data_merged=DATA %>% inner_join(data_Atos, by = "id0101")
-
-
-#check the pred input with new Excel file
-##good for now but have to check later!
 table(Data_merged$HU_1YR)
 out="HU_1YR"
 
@@ -37,6 +19,11 @@ df=Data_merged%>%
   drop_na()
 
 df$HU_1YR=as.factor(df$HU_1YR)
+
+
+df <- recipe( ~ ., data = df) %>%
+  step_upsample(HU_1YR) %>%
+  prep(training = df) %>% bake(new_data = NULL)
 
 df_split <- initial_split(df)
 train_data <- training(df_split)
@@ -55,8 +42,9 @@ bake(new_data = NULL)
 test_preped <-  prep(standardized) %>%
   bake(new_data = test_data)
 
-cores <- parallel::detectCores()
-cores
+require(doParallel)
+cores <- parallel::detectCores(logical = FALSE)
+registerDoParallel(cores = cores)
 #SVM
 svm_mod <- 
   svm_rbf(
@@ -78,9 +66,9 @@ svm_workflow
 set.seed(345)
 svm_res <- 
   svm_workflow %>% 
-  tune_grid(grid = 25,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 svm_res %>%
@@ -109,17 +97,18 @@ final_svm %>%
       data = train_preped
   ) %>%
   vi( method = "permute", nsim = 10, target = "HU_1YR",
-     pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = data_prep)%>%
+     pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = train_preped)%>%
   mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
 
-final_svm %>%
+svm_mod_pred = final_svm %>%
   set_engine("kernlab", importance = "permutation") %>%
   fit(HU_1YR ~ .,
       data = train_preped
-  ) %>% predict(train_preped)%>% 
-  bind_cols(train_preped %>% select(HU_1YR))%>% 
-  accuracy(truth = HU_1YR, .pred_class)
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_1YR))
 
+svm_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 #RF
 rf_mod <- 
   rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>% 
@@ -139,9 +128,9 @@ rf_workflow
 set.seed(345)
 rf_res <- 
   rf_workflow %>% 
-  tune_grid(grid = 10,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 rf_res %>%
@@ -172,19 +161,30 @@ final_rf %>%
   vi()%>%mutate(rank = dense_rank(desc(Importance)),
              mod="rf")%>% select(Variable,rank,mod)
 
-pfun <- function(object, newdata) predict(object, data = newdata)$predictions
-final_rf %>%
+
+rf_mod_pred= final_rf %>%
   set_engine("ranger", importance = "permutation") %>%
   fit(HU_1YR ~ .,
       data = train_preped
-  ) %>%
-  vi(method = "permute", nsim = 10, target = "HU_1YR",
-     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = data_prep)
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_1YR))
+
+rf_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
+
+#pfun <- function(object, newdata) predict(object, data = newdata)$predictions
+#final_rf %>%
+#  set_engine("ranger", importance = "permutation") %>%
+#  fit(HU_1YR ~ .,
+#      data = train_preped
+#  ) %>%
+#  vi(method = "permute", nsim = 10, target = "HU_1YR",
+#     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = data_prep)
 
 #Elasticent
 
 lr_mod <- 
-  logistic_reg(penalty = tune(), mixture = 1) %>% 
+  logistic_reg(penalty = tune(), mixture = tune()) %>% 
   set_engine("glmnet")
 lr_mod
 
@@ -199,21 +199,21 @@ lr_workflow
 set.seed(345)
 lr_res <- 
   lr_workflow %>% 
-  tune_grid(grid = 25,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 lr_res %>%
   collect_metrics()
 lr_best <- 
-  rf_res %>% 
-  select_best(metric = "roc_auc")
+  lr_res %>% 
+  select_best(metric = "sens")
 
 lr_best
 
 lr_res %>% 
-  show_best(metric = "roc_auc")
+  show_best(metric = "sens")
 
 autoplot(lr_res)
 
@@ -225,7 +225,6 @@ final_lr <- finalize_model(
 final_lr
 
 final_lr %>%
-  set_engine("glmnet", importance = "permutation") %>%
   fit(HU_1YR ~ .,
       data = train_preped
   ) %>%
@@ -233,17 +232,22 @@ final_lr %>%
   mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
 
 
+lr_mod_pred= final_lr %>%
+  fit(HU_1YR ~ .,
+      data = train_preped
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_1YR))
+
+
+lr_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 #Stack package
 model_ensemble <- 
-  # initialize the stack
   stacks() %>%
-  # add candidate members
   add_candidates(svm_res) %>%
   add_candidates(rf_res) %>%
   add_candidates(lr_res) %>%
-  # determine how to combine their predictions
   blend_predictions() %>%
-  # fit the candidates with nonzero stacking coefficients
   fit_members()
 
 model_ensemble
@@ -260,7 +264,7 @@ collect_parameters(model_ensemble, "svm_res")
 
 
 ens_mod_pred <-
-  test_preped%>%
+  train_preped%>%
   bind_cols(predict(model_ensemble, ., type = "class"))
 
 
@@ -327,3 +331,5 @@ https://www.tidyverse.org/blog/2020/02/themis-0-1-0/
 https://juliasilge.com/blog/himalayan-climbing/
   
 https://www.tidymodels.org/learn/models/sub-sampling/
+  
+  https://www.r-bloggers.com/2020/05/tidymodels-and-xgbooost-a-few-learnings/
