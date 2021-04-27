@@ -11,7 +11,6 @@ library(sparkline)
 library(plotly)
 
 
-
 table(Data_merged$HU_10YR)
 out="HU_10YR"
 
@@ -21,8 +20,9 @@ df=Data_merged%>%
 
 df$HU_10YR=as.factor(df$HU_10YR)
 
+
 df <- recipe( ~ ., data = df) %>%
-  step_upsample(HU_1YR) %>%
+  step_upsample(HU_10YR) %>%
   prep(training = df) %>% bake(new_data = NULL)
 
 df_split <- initial_split(df)
@@ -42,8 +42,9 @@ train_preped <- prep(standardized) %>%
 test_preped <-  prep(standardized) %>%
   bake(new_data = test_data)
 
-cores <- parallel::detectCores()
-cores
+require(doParallel)
+cores <- parallel::detectCores(logical = FALSE)
+registerDoParallel(cores = cores)
 #SVM
 svm_mod <- 
   svm_rbf(
@@ -65,21 +66,20 @@ svm_workflow
 set.seed(345)
 svm_res <- 
   svm_workflow %>% 
-  tune_grid(grid = 25,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 svm_res %>%
   collect_metrics()
+
+
 svm_best <- 
   svm_res %>% 
-  select_best(metric = "roc_auc")
+  select_best(metric = "f_meas")
 
 
-
-svm_res %>% 
-  show_best(metric = "roc_auc")
 
 autoplot(svm_res)
 
@@ -99,14 +99,15 @@ final_svm %>%
       pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = train_preped)%>%
   mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
 
-final_svm %>%
+svm_mod_pred = final_svm %>%
   set_engine("kernlab", importance = "permutation") %>%
   fit(HU_10YR ~ .,
       data = train_preped
-  ) %>% predict(train_preped)%>% 
-  bind_cols(train_preped %>% select(HU_10YR))%>% 
-  accuracy(truth = HU_10YR, .pred_class)
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_10YR))
 
+svm_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(svm_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(svm_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(svm_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))
 #RF
 rf_mod <- 
   rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>% 
@@ -126,21 +127,23 @@ rf_workflow
 set.seed(345)
 rf_res <- 
   rf_workflow %>% 
-  tune_grid(grid = 10,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 rf_res %>%
   collect_metrics()
+
+
 rf_best <- 
   rf_res %>% 
-  select_best(metric = "roc_auc")
+  select_best(metric = "f_meas")
 
 rf_best
 
 rf_res %>% 
-  show_best(metric = "roc_auc")
+  show_best(metric = "f_meas")
 
 autoplot(rf_res)
 
@@ -159,19 +162,30 @@ final_rf %>%
   vi()%>%mutate(rank = dense_rank(desc(Importance)),
                 mod="rf")%>% select(Variable,rank,mod)
 
-pfun <- function(object, newdata) predict(object, data = newdata)$predictions
-final_rf %>%
+
+rf_mod_pred= final_rf %>%
   set_engine("ranger", importance = "permutation") %>%
   fit(HU_10YR ~ .,
       data = train_preped
-  ) %>%
-  vi(method = "permute", nsim = 10, target = "HU_10YR",
-     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = train_preped)
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_10YR))
+
+rf_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(rf_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(rf_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(rf_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))
+
+#pfun <- function(object, newdata) predict(object, data = newdata)$predictions
+#final_rf %>%
+#  set_engine("ranger", importance = "permutation") %>%
+#  fit(HU_10YR ~ .,
+#      data = train_preped
+#  ) %>%
+#  vi(method = "permute", nsim = 10, target = "HU_10YR",
+#     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = train_preped)
 
 #Elasticent
 
 lr_mod <- 
-  logistic_reg(penalty = tune(), mixture = 1) %>% 
+  logistic_reg(penalty = tune(), mixture = tune()) %>% 
   set_engine("glmnet")
 lr_mod
 
@@ -186,21 +200,22 @@ lr_workflow
 set.seed(345)
 lr_res <- 
   lr_workflow %>% 
-  tune_grid(grid = 25,
+  tune_grid(grid = 100,
             control = control_stack_grid(),
-            metrics = metric_set(roc_auc), 
+            metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
 
 lr_res %>%
   collect_metrics()
+
 lr_best <- 
   lr_res %>% 
-  select_best(metric = "roc_auc")
+  select_best(metric = "f_meas")
 
 lr_best
 
 lr_res %>% 
-  show_best(metric = "roc_auc")
+  show_best(metric = "f_meas")
 
 autoplot(lr_res)
 
@@ -212,7 +227,6 @@ final_lr <- finalize_model(
 final_lr
 
 final_lr %>%
-  set_engine("glmnet", importance = "permutation") %>%
   fit(HU_10YR ~ .,
       data = train_preped
   ) %>%
@@ -220,17 +234,22 @@ final_lr %>%
   mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
 
 
+lr_mod_pred= final_lr %>%
+  fit(HU_10YR ~ .,
+      data = train_preped
+  ) %>% predict(test_preped)%>% 
+  bind_cols(test_preped %>% select(HU_10YR))
+
+
+lr_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(lr_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(lr_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(lr_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))
 #Stack package
 model_ensemble <- 
-  # initialize the stack
   stacks() %>%
-  # add candidate members
   add_candidates(svm_res) %>%
   add_candidates(rf_res) %>%
   add_candidates(lr_res) %>%
-  # determine how to combine their predictions
   blend_predictions() %>%
-  # fit the candidates with nonzero stacking coefficients
   fit_members()
 
 model_ensemble
@@ -248,15 +267,14 @@ collect_parameters(model_ensemble, "svm_res")
 
 ens_mod_pred <-
   test_preped%>%
-  bind_cols(predict(model_ensemble, ., type = "class"))
+  bind_cols(predict(model_ensemble, test_preped, type = "class"))
 
-
-ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)
+ens_mod_pred <-rf_mod_pred%>%bind_rows(rf_mod_pred)%>%bind_rows(svm_mod_pred)
 ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))
 
 
-##importance graph
+##importance graroc_auc()##importance graph
 
 
 
@@ -303,4 +321,5 @@ p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
 
 ggplotly(p)
 
-save(vips,ens_mod_pred,model_ensemble,  file = "HU_10YR_vips.RData")
+setwd("~/Usydney/Atos")
+save(vips,ens_mod_pred, file = "HU_10YR_vips.RData")

@@ -1,7 +1,6 @@
 ---
 title: "Atos Project"
 output: rmdformats::readthedown
-
 ---
 
 # Performance and Feature Importance Report
@@ -10,45 +9,15 @@ output: rmdformats::readthedown
 
 This report presents the performance and feature importance of prediction models of four outcomes:
 
-+ Remission
+-   Remission
 
-+ Past month heroin use
+-   Past month heroin use
 
-+ OD
+-   OD
 
-+ Mortality
+-   Mortality
 
-Also to address two questions:
-
-1.	Do you agree with these predictors or should we add more?
-```{r, echo=FALSE}
-
-load("~/OneDrive - Universite de Montreal/Usydney/data.RData")
-
-preds
-
-```
-
-2.	This is the list of the columns of HU OD 1 5 10y model.sav
-```{r echo=FALSE}
-colnames( data_Atos)
-
-``` 
-And this is the list of the outcomes
-```{r echo=FALSE}
-Out_Comes=c("STA_1YR","STA_5YR","MTA_5YR","STA_10YR","MTA_10YR","LTA_10yr","HU_1YR","HU_5YR","HU_10YR","OD_upto1YR","OD_upto5YR","OD_upto10YR","DEATH_1YR","DEATH_5YR","DEATH_10YR","DEATH_15YR")
-
-Out_Comes
-``` 
-Some are available in the file 
-```{r echo=FALSE}
-Out_Comes[(Out_Comes%in%colnames( data_Atos))]
-``` 
-Some are not available in the file
-```{r echo=FALSE}
-Out_Comes[!(Out_Comes%in%colnames( data_Atos))]
-rm(list = ls())
-``` 
+    -   Please note that two shorter terms mortality outcomes were not included because of less than 20 cases.
 
 ```{r include=FALSE}
 library(haven)
@@ -61,24 +30,26 @@ library(sparkline)
 library(plotly)
 ```
 
-
-
-
-
 ## Past month heroin use {.tabset}
 
 ### HU_1YR
 
 #### Performance
+
 ```{r, echo=FALSE}
 
-load("~/Statistical-Supplementary-Materials/Atos/HU_1YR_vips.RData")
- ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))%>%knitr::kable()
+load("~/Usydney/Atos/HU_1YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))%>%
+  knitr::kable()
+
 
 ```
 
-
 #### Feature Importance
+
 ```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
@@ -93,14 +64,17 @@ rm(list = ls())
 ### HU_5YR
 
 #### Performance
+
 ```{r, echo=FALSE}
-load("~/Statistical-Supplementary-Materials/Atos/HU_5YR_vips.RData")
-ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_5YR, .pred_class))%>%knitr::kable()
+load("~/Usydney/Atos/HU_5YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_5YR, .pred_class))%>%
+  knitr::kable()
 ```
 
-
 #### Feature Importance
-
 
 ```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
@@ -113,20 +87,21 @@ ggplotly(p)
 rm(list = ls())
 ```
 
-
 ### HU_10YR
 
 #### Performance
 
 ```{r, echo=FALSE}
-load("~/Statistical-Supplementary-Materials/Atos/HU_10YR_vips.RData")
-ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))%>%knitr::kable()
+load("~/Usydney/Atos/HU_10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))%>%
+  knitr::kable()
+
 ```
 
-
 #### Feature Importance
-
-
 
 ```{r, echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
@@ -145,135 +120,323 @@ rm(list = ls())
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/STA_1YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = STA_1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_1YR, .pred_class))%>%
+  knitr::kable()
+
+```
 
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### STA_5YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/STA_5YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = STA_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_5YR, .pred_class))%>%
+  knitr::kable()
 
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### MTA_5YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/MTA_5YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = MTA_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = MTA_5YR, .pred_class))%>%
+  knitr::kable()
 
+
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### STA_10YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/STA_10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = STA_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_10YR, .pred_class))%>%
+  knitr::kable()
+
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### MTA_10YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/MTA_10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = MTA_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = MTA_10YR, .pred_class))%>%
+  knitr::kable()
 
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### LTA_10yr
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/LTA_10yr_vips.RData")
+ens_mod_pred%>% accuracy(truth = LTA_10yr, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = LTA_10yr, .pred_class))%>%
+  knitr::kable()
 
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
-
-
+ggplotly(p)
+rm(list = ls())
+```
 
 ## OD {.tabset}
 
-
-### DEATH_1YR
-
-#### Performance
-
-
-
-#### Feature Importance
-
-
-
-### DEATH_5YR
+### OD_1YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/OD_upto1YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = OD_upto1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto1YR, .pred_class))%>%
+  knitr::kable()
 
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
-### DEATH_10YR
+### OD_5YR
 
 #### Performance
 
+```{r, echo=FALSE}
+load("~/Usydney/Atos/OD_upto5YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = OD_upto5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto5YR, .pred_class))%>%
+  knitr::kable()
 
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
+### OD_10YR
+
+#### Performance
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/OD_upto10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = OD_upto10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto10YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
+
+ggplotly(p)
+rm(list = ls())
+```
 
 ## Mortality {.tabset}
 
-
 ### DEATH_1YR
+
+Not available
 
 #### Performance
 
-
+Not available
 
 #### Feature Importance
 
-
+Not available
 
 ### DEATH_5YR
 
+Not available
+
 #### Performance
 
-
+Not available
 
 #### Feature Importance
 
-
+Not available
 
 ### DEATH_10YR
 
 #### Performance
 
-
+```{r, echo=FALSE}
+load("~/Usydney/Atos/DEATH_10YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = DEATH_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = DEATH_10YR, .pred_class))%>%
+  knitr::kable()
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
 
+ggplotly(p)
+rm(list = ls())
+```
 
 ### DEATH_15YR
 
 #### Performance
 
-
+```{r, echo=FALSE}
+load("~/Usydney/Atos/DEATH_15YR_vips.RData")
+ens_mod_pred%>% accuracy(truth = DEATH_15YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = DEATH_15YR, .pred_class))%>%
+  knitr::kable()
+```
 
 #### Feature Importance
 
+```{r, echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")
+
+ggplotly(p)
+rm(list = ls())
+```

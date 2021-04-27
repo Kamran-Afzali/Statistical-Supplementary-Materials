@@ -73,14 +73,13 @@ svm_res <-
 
 svm_res %>%
   collect_metrics()
+
+
 svm_best <- 
   svm_res %>% 
-  select_best(metric = "roc_auc")
+  select_best(metric = "f_meas")
 
 
-
-svm_res %>% 
-  show_best(metric = "roc_auc")
 
 autoplot(svm_res)
 
@@ -107,8 +106,8 @@ svm_mod_pred = final_svm %>%
   ) %>% predict(test_preped)%>% 
   bind_cols(test_preped %>% select(HU_1YR))
 
-svm_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
-  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
+svm_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(svm_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(svm_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(svm_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 #RF
 rf_mod <- 
   rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>% 
@@ -135,14 +134,16 @@ rf_res <-
 
 rf_res %>%
   collect_metrics()
+
+
 rf_best <- 
   rf_res %>% 
-  select_best(metric = "roc_auc")
+  select_best(metric = "f_meas")
 
 rf_best
 
 rf_res %>% 
-  show_best(metric = "roc_auc")
+  show_best(metric = "f_meas")
 
 autoplot(rf_res)
 
@@ -169,8 +170,8 @@ rf_mod_pred= final_rf %>%
   ) %>% predict(test_preped)%>% 
   bind_cols(test_preped %>% select(HU_1YR))
 
-rf_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
-  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
+rf_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(rf_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(rf_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(rf_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 
 #pfun <- function(object, newdata) predict(object, data = newdata)$predictions
 #final_rf %>%
@@ -179,7 +180,7 @@ rf_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>%
 #      data = train_preped
 #  ) %>%
 #  vi(method = "permute", nsim = 10, target = "HU_1YR",
-#     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = data_prep)
+#     pred_wrapper = pfun, metric = "auc", reference_class = 1, train = train_preped)
 
 #Elasticent
 
@@ -206,14 +207,15 @@ lr_res <-
 
 lr_res %>%
   collect_metrics()
+
 lr_best <- 
   lr_res %>% 
-  select_best(metric = "sens")
+  select_best(metric = "f_meas")
 
 lr_best
 
 lr_res %>% 
-  show_best(metric = "sens")
+  show_best(metric = "f_meas")
 
 autoplot(lr_res)
 
@@ -239,8 +241,8 @@ lr_mod_pred= final_lr %>%
   bind_cols(test_preped %>% select(HU_1YR))
 
 
-lr_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
-  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
+lr_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(lr_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(lr_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(lr_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 #Stack package
 model_ensemble <- 
   stacks() %>%
@@ -264,10 +266,10 @@ collect_parameters(model_ensemble, "svm_res")
 
 
 ens_mod_pred <-
-  train_preped%>%
-  bind_cols(predict(model_ensemble, ., type = "class"))
+  test_preped%>%
+  bind_cols(predict(model_ensemble, test_preped, type = "class"))
 
-
+ens_mod_pred <-rf_mod_pred%>%bind_rows(lr_mod_pred)%>%bind_rows(svm_mod_pred)
 ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
 bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))
 
@@ -279,17 +281,17 @@ bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod
 svmvip=final_svm %>%
   set_engine("kernlab", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi( method = "permute", nsim = 10, target = "HU_1YR",
-      pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = data_prep)%>%
+      pred_wrapper = kernlab::predict, metric = "auc", reference_class = 1, train = train_preped)%>%
   mutate(rank = dense_rank(desc(Importance)),mod="svm")%>% select(Variable,rank,mod)
 
 
 rfvip=final_rf %>%
   set_engine("ranger", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi()%>%mutate(rank = dense_rank(desc(Importance)),
                 mod="rf")%>% select(Variable,rank,mod)
@@ -298,7 +300,7 @@ rfvip=final_rf %>%
 lrvip=final_lr %>%
   set_engine("glmnet", importance = "permutation") %>%
   fit(HU_1YR ~ .,
-      data = data_prep
+      data = train_preped
   ) %>%
   vi()%>%
   mutate(rank = dense_rank(desc(Importance)),mod="glmnet")%>% select(Variable,rank,mod)
@@ -319,6 +321,7 @@ vips$Variable=as.factor(vips$Variable)
 
   ggplotly(p)
 
+setwd("~/Usydney/Atos")
 save(vips,ens_mod_pred,model_ensemble,  file = "HU_1YR_vips.RData")
 #References
 
