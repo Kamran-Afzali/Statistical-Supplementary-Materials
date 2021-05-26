@@ -79,7 +79,7 @@ svm_workflow
 set.seed(345)
 svm_res <- 
   svm_workflow %>% 
-  tune_grid(grid = 100,
+  tune_grid(grid = 50,
             control = control_stack_grid(),
             metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
@@ -140,7 +140,7 @@ rf_workflow
 set.seed(345)
 rf_res <- 
   rf_workflow %>% 
-  tune_grid(grid = 100,
+  tune_grid(grid = 50,
             control = control_stack_grid(),
             metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
@@ -213,7 +213,7 @@ lr_workflow
 set.seed(345)
 lr_res <- 
   lr_workflow %>% 
-  tune_grid(grid = 100,
+  tune_grid(grid = 50,
             control = control_stack_grid(),
             metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy), 
             resamples = cv_train)
