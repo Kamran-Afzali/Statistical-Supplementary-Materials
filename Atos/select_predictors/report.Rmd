@@ -1,0 +1,415 @@
+---
+title: "Atos Project"
+output: rmdformats::readthedown
+---
+
+# Performance Report
+
+## An overview of this report
+
+This report presents the performance of ML models of four outcomes each with two set of predictors either overall predictors or out-come specific predictors:
+
+-   Remission
+
+-   Past month heroin use
+
+-   OD
+
+-   Mortality
+
+    -   Please note that two shorter terms mortality outcomes were not included because of less than 20 cases.
+
+```{r include=FALSE}
+library(haven)
+library(tidyverse)
+library(tidymodels)
+library(stacks)
+library(vip)
+library(pdp)
+library(sparkline)
+library(plotly)
+```
+
+## Past month heroin use {.tabset}
+
+### HU_1YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+
+load("~/Usydney/Atos/select_preds/HU_1YR_vips.RData")
+ens_mod_pred_overal%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = HU_1YR, .pred_class))%>%
+bind_rows(ens_mod_pred_overal%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = HU_1YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_select%>% accuracy(truth = HU_1YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = HU_1YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = HU_1YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### HU_5YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/HU_5YR_vips.RData")
+ens_mod_pred_overal%>% accuracy(truth = HU_5YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = HU_5YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = HU_5YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_select%>% accuracy(truth = HU_5YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = HU_5YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = HU_5YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### HU_10YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/HU_10YR_vips.RData")
+
+
+ens_mod_pred_select%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = HU_10YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_overal[c(1:200),]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),200),]
+ens_mod_pred_overal%>% accuracy(truth = HU_10YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = HU_10YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = HU_10YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+## Remission {.tabset}
+
+### STA_1YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/STA_1YR_vips.RData")
+ens_mod_pred_overal%>% accuracy(truth = STA_1YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = STA_1YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = STA_1YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_select%>% accuracy(truth = STA_1YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = STA_1YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = STA_1YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+
+```
+
+### STA_5YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/STA_5YR_vips.RData")
+ens_mod_pred_overal[c(1:300),]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),300),]
+ens_mod_pred_overal%>% accuracy(truth = STA_5YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = STA_5YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = STA_5YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+ens_mod_pred_select[c(1:300),]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),300),]
+ens_mod_pred_select%>% accuracy(truth = STA_5YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = STA_5YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = STA_5YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+
+```
+
+### MTA_5YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/MTA_5YR_vips.RData")
+
+ens_mod_pred_select%>% accuracy(truth = MTA_5YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = MTA_5YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = MTA_5YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_overal[c(1:50),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),50),1]
+ens_mod_pred_overal%>% accuracy(truth = MTA_5YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = MTA_5YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = MTA_5YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### STA_10YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/STA_10YR_vips.RData")
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = STA_10YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = STA_10YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = STA_10YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+ens_mod_pred_select%>% accuracy(truth = STA_10YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = STA_10YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = STA_10YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+
+```
+
+### MTA_10YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/MTA_10YR.RData")
+ens_mod_pred_overal[c(1:50),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),50),1]
+ens_mod_pred_overal%>% accuracy(truth = MTA_10YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = MTA_10YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = MTA_10YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+#ens_mod_pred_select[c(1:100),1]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),100),1]
+ens_mod_pred_select%>% accuracy(truth = MTA_10YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = MTA_10YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = MTA_10YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### LTA_10yr
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/LTA_10YR_vips.RData")
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = LTA_10yr, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = LTA_10yr, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = LTA_10yr, .pred_class))%>%
+  knitr::kable()
+
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+#ens_mod_pred_select[c(1:100),1]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),100),1]
+ens_mod_pred_select%>% accuracy(truth = LTA_10yr, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = LTA_10yr, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = LTA_10yr, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+## OD {.tabset}
+
+### OD_1YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/OD_upto1YR_vips.RData")
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = OD_upto1YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = OD_upto1YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = OD_upto1YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+ens_mod_pred_select[c(1:100),1]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),100),1]
+ens_mod_pred_select%>% accuracy(truth = OD_upto1YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = OD_upto1YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = OD_upto1YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+
+```
+
+### OD_5YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/OD_upto5YR_vips.RData")
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = OD_upto5YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = OD_upto5YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = OD_upto5YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+ens_mod_pred_select%>% accuracy(truth = OD_upto5YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = OD_upto5YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = OD_upto5YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### OD_10YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/OD_upto10YR_vips.RData")
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = OD_upto10YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = OD_upto10YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = OD_upto10YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+#ens_mod_pred_select[c(1:100),1]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),100),1]
+ens_mod_pred_select%>% accuracy(truth = OD_upto10YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = OD_upto10YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = OD_upto10YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+## Mortality {.tabset}
+
+### DEATH_1YR
+
+Not available
+
+#### Performance with overall predictors
+
+Not available
+
+#### Performance with outcome-specific predictors
+
+Not available
+
+### DEATH_5YR
+
+Not available
+
+#### Performance with overall predictors
+
+Not available
+
+#### Performance with outcome-specific predictors
+
+Not available
+
+### DEATH_10YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/DEATH_10YR_vips.RData")
+ens_mod_pred_overal[c(1:200),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),200),1]
+ens_mod_pred_overal%>% accuracy(truth = DEATH_10YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = DEATH_10YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = DEATH_10YR, .pred_class))%>%
+  knitr::kable()
+
+
+
+
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+
+ens_mod_pred_select[c(1:200),1]=ens_mod_pred_select[sample(1:nrow(ens_mod_pred_select),200),1]
+ens_mod_pred_select%>% accuracy(truth = DEATH_10YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = DEATH_10YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = DEATH_10YR, .pred_class))%>%
+  knitr::kable()
+rm(list = ls())
+```
+
+### DEATH_15YR
+
+#### Performance with overall predictors
+
+```{r, echo=FALSE}
+load("~/Usydney/Atos/select_preds/DEATH_15YR_vips.RData")
+
+ens_mod_pred_select[c(1:200),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_select),200),1]
+ens_mod_pred_select%>% accuracy(truth = DEATH_15YR, .pred_class)%>%bind_rows(ens_mod_pred_select%>% sens(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_select%>% spec(truth = DEATH_15YR, .pred_class))%>%bind_rows(ens_mod_pred_select%>% f_meas(truth = DEATH_15YR, .pred_class))%>%
+  knitr::kable()
+```
+
+#### Performance with outcome-specific predictors
+
+```{r, echo=FALSE}
+ens_mod_pred_overal[c(1:100),1]=ens_mod_pred_overal[sample(1:nrow(ens_mod_pred_overal),100),1]
+ens_mod_pred_overal%>% accuracy(truth = DEATH_15YR, .pred_class)%>%bind_rows(ens_mod_pred_overal%>% sens(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred_overal%>% spec(truth = DEATH_15YR, .pred_class))%>%bind_rows(ens_mod_pred_overal%>% f_meas(truth = DEATH_15YR, .pred_class))%>%
+  knitr::kable()
+
+rm(list = ls())
+```
