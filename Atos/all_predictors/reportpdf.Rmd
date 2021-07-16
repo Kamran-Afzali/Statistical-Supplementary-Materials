@@ -1,7 +1,10 @@
 ---
-title: "Supplementary Materials"
-output: rmdformats::readthedown
+title: Supplementary Materials"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+
 ---
+
 
 # Performance and Feature Importance Report
 
@@ -26,7 +29,7 @@ library(sparkline)
 library(plotly)
 ```
 
-## Past month heroin use {.tabset}
+## Past month heroin use  
 
 ### HU_1YR
 ```{r include=FALSE}
@@ -39,7 +42,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 
 
 
@@ -55,16 +58,18 @@ ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
 
 ### HU_5YR
 ```{r include=FALSE}
@@ -78,7 +83,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = HU_5YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = HU_5YR, .pred_class))%>%
@@ -88,16 +93,19 @@ ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### HU_10YR
 ```{r include=FALSE}
@@ -110,7 +118,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%
@@ -121,18 +129,21 @@ ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
 
-## Remission {.tabset}
+\newpage
+
+
+## Remission  
 
 ### STA_1YR
 ```{r include=FALSE}
@@ -145,7 +156,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = STA_1YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = STA_1YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = STA_1YR, .pred_class))%>%
@@ -157,16 +168,19 @@ ens_mod_pred%>% accuracy(truth = STA_1YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### STA_5YR
 ```{r include=FALSE}
@@ -179,7 +193,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = STA_5YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = STA_5YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = STA_5YR, .pred_class))%>%
@@ -190,16 +204,19 @@ ens_mod_pred%>% accuracy(truth = STA_5YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### MTA_5YR
 ```{r include=FALSE}
@@ -212,7 +229,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = MTA_5YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = MTA_5YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = MTA_5YR, .pred_class))%>%
@@ -224,16 +241,19 @@ ens_mod_pred%>% accuracy(truth = MTA_5YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### STA_10YR
 ```{r include=FALSE}
@@ -246,7 +266,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = STA_10YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = STA_10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = STA_10YR, .pred_class))%>%
@@ -257,16 +277,19 @@ ens_mod_pred%>% accuracy(truth = STA_10YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### MTA_10YR
 ```{r include=FALSE}
@@ -279,7 +302,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = MTA_10YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = MTA_10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = MTA_10YR, .pred_class))%>%
@@ -290,16 +313,19 @@ ens_mod_pred%>% accuracy(truth = MTA_10YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### LTA_10yr
 ```{r include=FALSE}
@@ -312,7 +338,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = LTA_10yr, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = LTA_10yr, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = LTA_10yr, .pred_class))%>%
@@ -323,18 +349,21 @@ ens_mod_pred%>% accuracy(truth = LTA_10yr, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
 
-## OD {.tabset}
+\newpage
+
+
+## OD  
 
 ### OD_1YR
 ```{r include=FALSE}
@@ -347,7 +376,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = OD_upto1YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = OD_upto1YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = OD_upto1YR, .pred_class))%>%
@@ -358,16 +387,19 @@ ens_mod_pred%>% accuracy(truth = OD_upto1YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### OD_5YR
 ```{r include=FALSE}
@@ -380,7 +412,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = OD_upto5YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = OD_upto5YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = OD_upto5YR, .pred_class))%>%
@@ -389,18 +421,22 @@ ens_mod_pred%>% accuracy(truth = OD_upto5YR, .pred_class)%>%
 
 ```
 
+
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### OD_10YR
 ```{r include=FALSE}
@@ -413,7 +449,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = OD_upto10YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = OD_upto10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = OD_upto10YR, .pred_class))%>%
@@ -424,18 +460,21 @@ ens_mod_pred%>% accuracy(truth = OD_upto10YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
 
-## Mortality {.tabset}
+\newpage
+
+
+## Mortality  
 
 ### DEATH_10YR
 ```{r include=FALSE}
@@ -448,7 +487,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 ```
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = DEATH_10YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = DEATH_10YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = DEATH_10YR, .pred_class))%>%
@@ -458,16 +497,19 @@ ens_mod_pred%>% accuracy(truth = DEATH_10YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
+
+\newpage
+
 
 ### DEATH_15YR
 ```{r include=FALSE}
@@ -481,7 +523,7 @@ vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past mont
 
 #### Performance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 ens_mod_pred%>% accuracy(truth = DEATH_15YR, .pred_class)%>%
   bind_rows(ens_mod_pred%>% sens(truth = DEATH_15YR, .pred_class))%>%
   bind_rows(ens_mod_pred%>% spec(truth = DEATH_15YR, .pred_class))%>%
@@ -491,13 +533,13 @@ ens_mod_pred%>% accuracy(truth = DEATH_15YR, .pred_class)%>%
 
 #### Feature Importance
 
-```{r, echo=FALSE}
+```{r fig.align="center", echo=FALSE}
 p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
   scale_fill_gradient(low = "green", high = "red") + 
   geom_bar(position="dodge", stat="identity", aes(fill = importance))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
 
-ggplotly(p)
+ p
 rm(list = ls())
 ```
