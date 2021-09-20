@@ -12,9 +12,10 @@ preds_t=tibble::tribble(
   10L, "first_heroin3",         "dg0106",              "crime_1",         "sev_dis_mcs01",            "amphet_1",      "benzos_1",        "dp01j59"
 )
 
-
-preds_t$OVERALL
-c("Age","Drug used for first high","Age when first got high","Sexual Trauma",
+top10=Data_merged[,colnames(Data_merged) %in% c(preds_t$OVERALL,"h0102")]
+summary(as.numeric(as.character(top10$h0101b)))
+sort(table(as.numeric(as.character(as.vector(c(top10$h0101b))))))
+ c("Age","Drug used for first high","Age when first got high","Sexual Trauma",
   "Ever Overdosed","Years of school completed","Age when first used heroin","Past month alcohol use", "prison history","treatment")
 
 

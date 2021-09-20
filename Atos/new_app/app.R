@@ -35,17 +35,17 @@ ui <- dashboardPage(
                                     
                         )),
                     box(title = "Risk factors", width = 4, solidHeader = T, status = "primary", 
-                        selectInput("var2", 
+                        selectInput("var0", 
                                     label = "Treatment",
                                     choices = c("No"=0,
                                                 "Yes"=1
                                     )),
-                        selectInput("var", 
+                        selectInput("var1", 
                                     label = "Sexual trauma",
                                     choices = c("No"=0,
                                                 "Yes"=1
                                     )),
-                        selectInput("var1", 
+                        selectInput("var2", 
                                     label = "Prison history",
                                     choices = c("No"=0,
                                                 "Yes"=1
@@ -64,26 +64,29 @@ ui <- dashboardPage(
                                     label = "Drug used for first high",
                                     choices = c("A"=0,
                                                 "B"=1,
-                                                "C"=2
+                                                "C"=2,
+                                                "D"=3,
+                                                "E"=4,
+                                                "Other"=5
                                     )),
                         ),
                     
                    
                     
                     box(title = "Age-related factors", width = 4, solidHeader = T, status = "primary", 
-                        sliderInput("range3", 
+                        sliderInput("range1", 
                                     label = "Age:",
                                     min = 18, max = 60, value = 30),
-                        sliderInput("range", 
+                        sliderInput("range2", 
                                     label = "Age first got high:",
                                     min = 12, max = 60, value = 25),
-                        sliderInput("range2", 
+                        sliderInput("range3", 
                                     label = "Age first heroin :",
                                     min = 12, max = 60, value = 25),
-                        sliderInput("range1", 
-                                    label = "Age treatment :",
-                                    min = 12, max = 60, value = 25),
                         sliderInput("range4", 
+                                    label = "Age when first injected any drug :",
+                                    min = 12, max = 60, value = 25),
+                        sliderInput("range5", 
                                     label = "Years of school completed:",
                                     min = 1, max = 12, value = 6)),
                     tabBox(
@@ -97,8 +100,8 @@ ui <- dashboardPage(
                         title = "InfoBox2", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box0")),
-                        tabPanel("Risk factors", solidHeader = T,status = "warning",  valueBoxOutput("Box1"))
+                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box2")),
+                        tabPanel("Risk factors", solidHeader = T,status = "warning",  valueBoxOutput("Box3"))
                     )
                     
                 ),
@@ -113,5 +116,34 @@ ui <- dashboardPage(
 )
 
 
-server <- function(input, output) {}
+server <- function(input, output) {
+    data <- reactive({c(
+        Treatment=(as.numeric(as.character(input$var0))),
+        Trauma=(as.numeric(as.character(input$var1))),
+        Prison=(as.numeric(as.character(input$var2))),
+        Alcohol_use=(as.numeric(as.character(input$var3))),
+        OD=(as.numeric(as.character(input$var4))),
+        Drug_Type=(as.numeric(as.character(input$var5))),
+        Age =(input$range1),
+        Age_high=(input$range2),
+        Age_heroin=(input$range3),
+        Age_injected=(input$range4),
+        School=(input$range5)
+    )})
+    
+    
+    
+    output$selected_var <- renderText({
+        dat=data()
+        paste( if (dat[1]>0) {"Trauma ,"} else {},
+               if (dat[2]>0) {"Prison ,"} else {},
+               if (dat[3]<0) {"No-Treatment ,"} else {},
+               if (dat[4]>0) {"Cocaine_use ,"} else {},
+               if (dat[5]<1) {"Age first got high ,"} else {},
+               if (dat[6]<1) {"Age heroin ,"} else {},
+               if (dat[7]<0) {"Age ,"} else {}
+        )
+    })
+    
+}
 shinyApp(ui = ui, server = server)
