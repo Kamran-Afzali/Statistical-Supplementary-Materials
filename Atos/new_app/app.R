@@ -62,12 +62,11 @@ ui <- dashboardPage(
                                     )),
                         selectInput("var5", 
                                     label = "Drug used for first high",
-                                    choices = c("A"=0,
-                                                "B"=1,
-                                                "C"=2,
-                                                "D"=3,
-                                                "E"=4,
-                                                "Other"=5
+                                    choices = c("Alcohol"=1,
+                                                "Cannabis"=2,
+                                                "Alcohol/Cannabis"=12,
+                                                "Heroin"=8,
+                                                "Other"=999
                                     )),
                         ),
                     
