@@ -1,3 +1,7 @@
+library('fastDummies')
+library(tidyverse)
+library(haven)
+
 preds_t=tibble::tribble(
   ~nb,        ~OVERALL,      ~HEROIN.USE, ~SHORT.TERM.ABSTINENCE, ~MEDIUM.TERM.ABSTINENCE, ~LONG.TERM.ABSTINENCE,       ~OVERDOSE,       ~MORTALITY,
   1L,        "dg0102",      "aust_born",        "SEXUAL_TRAUMA",                "dg0102",   "unstablehousingBL", "SEXUAL_TRAUMA",         "h0101b",
@@ -13,27 +17,32 @@ preds_t=tibble::tribble(
 )
 
 #load("/Users/kamranafzali/OneDrive - Universite de Montreal/Usydney/data.RData")
-library(tidyverse)
-library(haven)
+
 ATOS_Modelling <- read_sav("OneDrive - Universite de Montreal/Usydney/ATOS Modelling.sav")
 View(ATOS_Modelling)
 
 
 load("/Users/kamranafzali/OneDrive - Universite de Montreal/Usydney/data_04_2021.RData")
-Data_merged$ptsddx
-ATOS_Modelling$as01
+# Data_merged$ptsddx
+# ATOS_Modelling$as01
 
 table(Data_merged$first_inj_cat,Data_merged$DEATH_15YR)
 
 preds=preds[!(preds %in% c("T1","T2","T3"))]
 
 Data_merged=Data_merged[,c(preds,Out_Comes)]
+top10=Data_merged[,colnames(Data_merged) %in% c(preds_t$OVERALL)]
 
 sort(table(Data_merged$h0101b))
 Data_merged$h0101b[!(Data_merged$h0101b%in%c(8,12,2,1))]=999
 Data_merged$h0101b=as.factor(Data_merged$h0101b)
 Data_merged=as_tibble(Data_merged)
 
+Data_merged=dummy_cols(Data_merged, select_columns = 'h0101b')
+
+Data_merged=Data_merged[,colnames(Data_merged)!='h0101b']
+
+preds=colnames(Data_merged)[!(colnames(Data_merged)%in%Out_Comes)]
 # 
 # Labels:
 #   value                   label
@@ -54,9 +63,7 @@ Data_merged=as_tibble(Data_merged)
 # 15 Alcohol/Benzodiazepines
 # 16         Cannabis/Heroin
 
-top10=Data_merged[,colnames(Data_merged) %in% c(preds_t$OVERALL)]
-summary(as.numeric(as.character(top10$h0101b)))
-sort(table(as.numeric(as.character(as.vector(c(top10$h0101b))))))
+
  c("Age","Drug used for first high","Age when first got high","Sexual Trauma",
   "Ever Overdosed","Years of school completed","Age when first used heroin","Past month alcohol use", "prison history","treatment")
 
@@ -66,11 +73,29 @@ colnames(top10)
 str(Data_merged)
 Data_merged=as_tibble(apply(Data_merged, 2, function(x){as.numeric(as.character(x))}))
 
-apply(Data_merged, 2, function(x){max(x,na.rm = T)})
+
+Data_merged$dp401=1*(Data_merged$dp401-1>0)
+Data_merged$ptsddx=1*(Data_merged$ptsddx-1>0)
+Data_merged$as01=1*(Data_merged$as01-1>0)
+Data_merged$dp01j59=1*(Data_merged$dp01j59-1>0)
+
+
 
 apply (Data_merged[,preds],2, function(x){mean(x,na.rm = T)})
 apply (Data_merged[,preds],2, function(x){min(x,na.rm = T)})
 apply (Data_merged[,preds],2, function(x){max(x,na.rm = T)})
+
+a=apply (Data_merged[,preds],2, function(x){max(x,na.rm = T)})
+b=apply (Data_merged[,preds],2, function(x){mean(x,na.rm = T)})
+a==1
+
+sign=numeric(length(preds))
+names(sign)=preds
+sign[a==1]=0.5
+sign[a!=1]=b[a!=1]
+sign
+
+
 # c(
 #   Treatment=(as.numeric(as.character(input$var0))),
 #   Trauma=(as.numeric(as.character(input$var1))),
@@ -85,15 +110,15 @@ apply (Data_merged[,preds],2, function(x){max(x,na.rm = T)})
 #   School=(input$range5)
 # )
 
-c("T1","SEXUAL_TRAUMA", "dg0112a", "alcohol_1","BLEVEREOD","h0101b", "dg0102",  "h0101a", "h0104","dg0106","first_inj_cat")
+reacts=c("T4","SEXUAL_TRAUMA", "dg0112a", "alcohol_1","BLEVEREOD","h0101b", "dg0102",  "h0101a", "h0104","dg0106","first_inj_cat")
+Reacts=numeric(length(reacts))
+Reacts=rnorm(length(reacts))
+names(Reacts)=reacts
+sign[reacts]=Reacts
+sign
 
 
-#T4 treatment
-#Alcohol cannabis alc/can heroin other
-#reorganize the data
-#write the pre-processer(h0101b)
-#EXTRACT THE DATA
-#WRITE THE UPDATER FUNCTION
+#UPPER LOWER BOUND
 
 
 
