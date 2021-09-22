@@ -19,19 +19,20 @@ preds_t=tibble::tribble(
 #load("/Users/kamranafzali/OneDrive - Universite de Montreal/Usydney/data.RData")
 
 ATOS_Modelling <- read_sav("OneDrive - Universite de Montreal/Usydney/ATOS Modelling.sav")
-View(ATOS_Modelling)
 
 
 load("/Users/kamranafzali/OneDrive - Universite de Montreal/Usydney/data_04_2021.RData")
 # Data_merged$ptsddx
 # ATOS_Modelling$as01
-
-table(Data_merged$first_inj_cat,Data_merged$DEATH_15YR)
+#table(Data_merged$first_inj_cat,Data_merged$DEATH_15YR)
 
 preds=preds[!(preds %in% c("T1","T2","T3"))]
 
 Data_merged=Data_merged[,c(preds,Out_Comes)]
 top10=Data_merged[,colnames(Data_merged) %in% c(preds_t$OVERALL)]
+colnames(top10)
+str(Data_merged)
+
 
 sort(table(Data_merged$h0101b))
 Data_merged$h0101b[!(Data_merged$h0101b%in%c(8,12,2,1))]=999
@@ -68,9 +69,6 @@ preds=colnames(Data_merged)[!(colnames(Data_merged)%in%Out_Comes)]
   "Ever Overdosed","Years of school completed","Age when first used heroin","Past month alcohol use", "prison history","treatment")
 
 
-colnames(top10)
-
-str(Data_merged)
 Data_merged=as_tibble(apply(Data_merged, 2, function(x){as.numeric(as.character(x))}))
 
 
@@ -93,7 +91,27 @@ sign=numeric(length(preds))
 names(sign)=preds
 sign[a==1]=0.5
 sign[a!=1]=b[a!=1]
-sign
+sign=as.data.frame(t(sign))
+
+signl=sign
+
+signl$trauma=0
+signl$othop_1=0
+signl$sev_dis_pcs01=0
+signl$sev_dis_mcs01=0
+signl$od1201=0
+signl$INTERPSNL_TRAUMA=0
+signl$prev_tmt=1
+
+signu=sign
+
+signu$trauma=1
+signu$othop_1=1
+signu$sev_dis_pcs01=1
+signu$sev_dis_mcs01=1
+signu$od1201=1
+signu$INTERPSNL_TRAUMA=1
+signu$prev_tmt=0
 
 
 # c(
@@ -114,11 +132,33 @@ reacts=c("T4","SEXUAL_TRAUMA", "dg0112a", "alcohol_1","BLEVEREOD","h0101b", "dg0
 Reacts=numeric(length(reacts))
 Reacts=rnorm(length(reacts))
 names(Reacts)=reacts
+Reacts=as.data.frame(t(Reacts))
+Reacts$h0101b=999
+Reacts["first_inj_cat"]=1*(Reacts["first_inj_cat"]>17)
+Reacts=dummy_cols(Reacts, select_columns = "h0101b")
+Reacts=Reacts[,colnames(Reacts)!='h0101b']
+reacts=colnames(Reacts)
+reacts
 sign[reacts]=Reacts
-sign
+signl[reacts]=Reacts
+signu[reacts]=Reacts
+
+mattt=rbind(sign,signl,signu)
 
 
-#UPPER LOWER BOUND
+# output sign,signl,signu
+#fit 1 model
 
 
 
+df <- expand.grid(x=seq(1, 11, 1), y=seq(0, 1, 0.1))     # dataframe for all combinations
+df$z=df$x+(df$y)*10
+## plot
+p=ggplot(df, aes(x, y, fill=z)) +      # map fill to the sum of x & y
+  geom_tile() +      # let the grid show through a bit
+  scale_fill_gradient(low='green', high='red',guide=FALSE)+
+  geom_hline(yintercept = seq(0.07142, 1, 0.15), color = "white")+
+  geom_vline(xintercept = seq(1.5,10.5), color = "white")+
+  scale_x_continuous(name= "Number of Risk factors",breaks = 0:11, expand = c(0, 0))+
+  scale_y_continuous(name = "Cumulated RISK",breaks = 0:1, expand = c(0, 0))+
+  theme_bw()

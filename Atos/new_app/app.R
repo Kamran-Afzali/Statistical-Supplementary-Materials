@@ -92,7 +92,7 @@ ui <- dashboardPage(
                         title = "InfoBox", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box0")),
+                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  tableOutput("Box0")),
                         tabPanel("Risk factors", solidHeader = T,status = "warning",  valueBoxOutput("Box1"))
                     ),
                     tabBox(
@@ -131,7 +131,7 @@ server <- function(input, output) {
     )})
     
     
-    
+
     output$selected_var <- renderText({
         dat=data()
         paste( if (dat[1]>0) {"Trauma ,"} else {},
@@ -142,6 +142,14 @@ server <- function(input, output) {
                if (dat[6]<1) {"Age heroin ,"} else {},
                if (dat[7]<0) {"Age ,"} else {}
         )
+    })
+
+    output$Box0 <- renderTable({
+        return(t(mattt))
+        })
+    output$plot <- renderPlot({
+        p
+        
     })
     
 }
