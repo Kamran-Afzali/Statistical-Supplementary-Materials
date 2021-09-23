@@ -1,6 +1,12 @@
 library('fastDummies')
 library(tidyverse)
+library(tidymodels)
 library(haven)
+library(butcher)
+
+#deal with CI
+#handle anomalies per-outcome
+
 
 preds_t=tibble::tribble(
   ~nb,        ~OVERALL,      ~HEROIN.USE, ~SHORT.TERM.ABSTINENCE, ~MEDIUM.TERM.ABSTINENCE, ~LONG.TERM.ABSTINENCE,       ~OVERDOSE,       ~MORTALITY,
@@ -65,9 +71,7 @@ preds=colnames(Data_merged)[!(colnames(Data_merged)%in%Out_Comes)]
 # 16         Cannabis/Heroin
 
 
- c("Age","Drug used for first high","Age when first got high","Sexual Trauma",
-  "Ever Overdosed","Years of school completed","Age when first used heroin","Past month alcohol use", "prison history","treatment")
-
+ 
 
 Data_merged=as_tibble(apply(Data_merged, 2, function(x){as.numeric(as.character(x))}))
 
@@ -101,7 +105,6 @@ signl$sev_dis_pcs01=0
 signl$sev_dis_mcs01=0
 signl$od1201=0
 signl$INTERPSNL_TRAUMA=0
-signl$prev_tmt=1
 
 signu=sign
 
@@ -111,7 +114,6 @@ signu$sev_dis_pcs01=1
 signu$sev_dis_mcs01=1
 signu$od1201=1
 signu$INTERPSNL_TRAUMA=1
-signu$prev_tmt=0
 
 
 # c(
@@ -128,7 +130,15 @@ signu$prev_tmt=0
 #   School=(input$range5)
 # )
 
-reacts=c("T4","SEXUAL_TRAUMA", "dg0112a", "alcohol_1","BLEVEREOD","h0101b", "dg0102",  "h0101a", "h0104","dg0106","first_inj_cat")
+reacts=c("T4","SEXUAL_TRAUMA", "dg0112a", "alcohol_1","BLEVEREOD","h0101b", "dg0102",  "h0101a", "h0104","first_inj_cat","dg0106")
+name_reacts=c("Treatment","Sexual Trauma","Prison history","Past month alcohol use","Ever Overdosed","Drug used for first high","Age",
+              "Age when first got high","Age when first used heroin","Age when first injected any drug","Years of school completed")
+
+paste(name_reacts,collapse=" <br/> ")
+HTML("<b>paste(name_reacts,collapse='<br/>')<\b>")
+x=cat(name_reacts, sep = '\n')
+paste0(name_reacts, sep = '<br/>', collapse = ' ')
+
 Reacts=numeric(length(reacts))
 Reacts=rnorm(length(reacts))
 names(Reacts)=reacts
@@ -137,8 +147,8 @@ Reacts$h0101b=999
 Reacts["first_inj_cat"]=1*(Reacts["first_inj_cat"]>17)
 Reacts=dummy_cols(Reacts, select_columns = "h0101b")
 Reacts=Reacts[,colnames(Reacts)!='h0101b']
-reacts=colnames(Reacts)
-reacts
+reacts2=colnames(Reacts)
+reacts2
 sign[reacts]=Reacts
 signl[reacts]=Reacts
 signu[reacts]=Reacts
@@ -146,14 +156,13 @@ signu[reacts]=Reacts
 mattt=rbind(sign,signl,signu)
 
 
-# output sign,signl,signu
-#fit 1 model
 
 
 
+
+###################################Plot###################################
 df <- expand.grid(x=seq(1, 11, 1), y=seq(0, 1, 0.1))     # dataframe for all combinations
 df$z=df$x+(df$y)*10
-## plot
 p=ggplot(df, aes(x, y, fill=z)) +      # map fill to the sum of x & y
   geom_tile() +      # let the grid show through a bit
   scale_fill_gradient(low='green', high='red',guide=FALSE)+
@@ -162,3 +171,85 @@ p=ggplot(df, aes(x, y, fill=z)) +      # map fill to the sum of x & y
   scale_x_continuous(name= "Number of Risk factors",breaks = 0:11, expand = c(0, 0))+
   scale_y_continuous(name = "Cumulated RISK",breaks = 0:1, expand = c(0, 0))+
   theme_bw()
+
+###################################Model###################################
+out="DEATH_10YR"
+df=Data_merged%>%
+  select(c(out,preds))
+df$DEATH_10YR=as.factor(df$DEATH_10YR)
+
+df$BLEVEREOD[is.na(df$BLEVEREOD)]=df$od1201[is.na(df$BLEVEREOD)]
+df=df%>% 
+  drop_na()
+
+
+table(df$DEATH_10YR)
+
+cv_train <- vfold_cv(df, v = 10, repeats = 5, strata = out)
+
+rec_obj <- recipe(DEATH_10YR ~ ., data = df)
+standardized <- rec_obj %>%
+  themis::step_smote (DEATH_10YR)
+
+train_preped <- prep(standardized) %>%
+  bake(new_data = NULL)
+
+table(df$DEATH_10YR)
+
+xgb_spec <-
+  boost_tree(
+    trees = tune(),
+    min_n = tune(),
+    mtry = tune(),
+    learn_rate = 0.01
+  ) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+xgb_wf <- workflow(rec_obj, xgb_spec)
+
+library(finetune)
+doParallel::registerDoParallel()
+
+set.seed(345)
+xgb_rs <- tune_race_anova(
+  xgb_wf,
+  resamples = cv_train,
+  grid = 100,
+  metrics = metric_set(roc_auc,f_meas,sens,bal_accuracy),
+  control = control_race(verbose_elim = TRUE)
+)
+
+xgb_rs %>%
+  collect_metrics()
+
+xgb_best <- 
+  xgb_rs %>% 
+  select_best(metric = "f_meas")
+
+autoplot(xgb_rs)
+
+final_xgb <- finalize_model(
+  xgb_spec,
+  xgb_best
+)
+
+final_xgb
+
+mod1=final_xgb %>%
+  set_engine("xgboost") %>%
+  fit(DEATH_10YR ~ .,
+      data = train_preped
+  ) 
+
+mod1%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)*100
+
+butcher::weigh(mod1)
+lobstr::obj_size(mod1)
+
+cleaned_mod1b <- butcher::axe_fitted(mod1, verbose = TRUE)
+butcher::weigh(cleaned_mod1b)
+lobstr::obj_size(cleaned_mod1b)
+
+
+cleaned_mod1b%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)*100

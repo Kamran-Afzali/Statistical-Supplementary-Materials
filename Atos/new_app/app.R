@@ -9,6 +9,9 @@
 
 library(shiny)
 library(shinydashboard)
+library('fastDummies')
+library(tidyverse)
+library(haven)
 # Define UI for application that draws a histogram
 
 ui <- dashboardPage(
@@ -37,8 +40,8 @@ ui <- dashboardPage(
                     box(title = "Risk factors", width = 4, solidHeader = T, status = "primary", 
                         selectInput("var0", 
                                     label = "Treatment",
-                                    choices = c("No"=0,
-                                                "Yes"=1
+                                    choices = c("No"=1,
+                                                "Yes"=0
                                     )),
                         selectInput("var1", 
                                     label = "Sexual trauma",
@@ -92,20 +95,20 @@ ui <- dashboardPage(
                         title = "InfoBox", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  tableOutput("Box0")),
-                        tabPanel("Risk factors", solidHeader = T,status = "warning",  valueBoxOutput("Box1"))
+                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  htmlOutput("Box0")),
+                        tabPanel("Risk factors", solidHeader = T,status = "warning",  tableOutput("Box1"))
                     ),
                     tabBox(
                         title = "InfoBox2", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box2")),
-                        tabPanel("Risk factors", solidHeader = T,status = "warning",  valueBoxOutput("Box3"))
+                        tabPanel("Risk estimate2", solidHeader = T,status = "primary",  textOutput("Box2")),
+                        tabPanel("Risk factors2", solidHeader = T,status = "warning",  textOutput("Box3"))
                     )
                     
                 ),
                 fluidRow(
-                    box(title = "Main risk factors", solidHeader = T, status = "primary", textOutput("selected_var")),
+                    box(title = "Main risk factors", solidHeader = T, status = "primary", tableOutput("selected_var")),
                     box(title = "Risk plot", solidHeader = T, status = "primary", plotOutput("plot"))
                 )   
         )
@@ -132,23 +135,117 @@ server <- function(input, output) {
     
     
 
-    output$selected_var <- renderText({
+    output$Box0 <- renderUI({
         dat=data()
-        paste( if (dat[1]>0) {"Trauma ,"} else {},
-               if (dat[2]>0) {"Prison ,"} else {},
-               if (dat[3]<0) {"No-Treatment ,"} else {},
-               if (dat[4]>0) {"Cocaine_use ,"} else {},
-               if (dat[5]<1) {"Age first got high ,"} else {},
-               if (dat[6]<1) {"Age heroin ,"} else {},
-               if (dat[7]<0) {"Age ,"} else {}
+        vect=c( dat[1]==0,
+            dat[2]>0,
+            dat[3]>0,
+            dat[4]>0,
+            dat[5]>0,
+            dat[6]>0,
+            dat[7]<30,
+            dat[8]<13,
+            dat[9]<20,
+            dat[10]<17,
+            dat[11]<10
         )
+        HTML(paste0(name_reacts[vect], sep = '<br/>', collapse = ' '))
+    })
+    
+    output$Box1 <- renderTable({
+        dat=data()
+        dat=t(dat)
+        colnames(dat)=reacts
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        dat
+    })
+    
+    output$Box2 <- renderText({
+        dat=data()
+        dat=t(dat)
+        colnames(dat)=reacts
+        #dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        reacts2=colnames(dat)
+        reacts2
+    })
+    
+    output$Box3 <- renderText({
+        dat=data()
+        dat=t(dat)
+        colnames(dat)=reacts
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=as.numeric(1*(dat["first_inj_cat"]>17))
+        reacts2=colnames(dat)
+        sign[reacts2]=dat
+        signl[reacts2]=dat
+        signu[reacts2]=dat
+        
+        low=cleaned_mod1b%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)
+        medd=cleaned_mod1b%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)
+        high=cleaned_mod1b%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)
+
+        
+       paste(low,medd,high)
+        
     })
 
-    output$Box0 <- renderTable({
-        return(t(mattt))
+    output$selected_var <- renderTable({
+        dat=data()
+        dat=t(dat)
+        colnames(dat)=reacts
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        reacts2=colnames(dat)
+        sign[reacts2]=dat
+        signl[reacts2]=dat
+        signu[reacts2]=dat
+        
+        mattt=rbind(sign,signl,signu)
+        
+        return(mattt)
         })
     output$plot <- renderPlot({
-        p
+        dat=data()
+        vect=c( dat[1]==0,
+                dat[2]>0,
+                dat[3]>0,
+                dat[4]>0,
+                dat[5]>0,
+                dat[6]>0,
+                dat[7]<30,
+                dat[8]<13,
+                dat[9]<20,
+                dat[10]<17,
+                dat[11]<10
+        )
+        lenn=length(name_reacts[vect])
+        
+        dat=data()
+        dat=t(dat)
+        colnames(dat)=reacts
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=as.numeric(1*(dat["first_inj_cat"]>17))
+        reacts2=colnames(dat)
+        sign[reacts2]=dat
+        signl[reacts2]=dat
+        signu[reacts2]=dat
+        
+        high=cleaned_mod1b%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        
+        
+        
+        p+geom_point(aes(lenn, high), shape = 23, colour = "black", fill = "white", size = 5, stroke = 5)
+        
+        
+        
         
     })
     
