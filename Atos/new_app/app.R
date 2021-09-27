@@ -12,6 +12,15 @@ library(shinydashboard)
 library('fastDummies')
 library(tidyverse)
 library(haven)
+load("~/Usydney/Atos/shinymodels.RData")
+
+
+mod_ls=list(mod_HU_1YR,mod_HU_5YR,mod_HU_10YR,
+            mod_STA_1YR,mod_STA_5YR,mod_STA_10YR,
+            mod_MTA_5YR,mod_MTA_10YR,
+            mod_LTA_10yr,
+            mod_OD_upto1YR,mod_OD_upto5YR,mod_OD_upto10YR)
+
 # Define UI for application that draws a histogram
 
 ui <- dashboardPage(
@@ -186,9 +195,11 @@ server <- function(input, output) {
         signl[reacts2]=dat
         signu[reacts2]=dat
         
-        low=cleaned_mod1b%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)
-        medd=cleaned_mod1b%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)
-        high=cleaned_mod1b%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)
+        mod1_app=mod_ls[[as.numeric(input$var6)]]
+        
+        low=mod1_app%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)
+        medd=mod1_app%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)
+        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)
 
         
        paste(low,medd,high)
@@ -237,8 +248,8 @@ server <- function(input, output) {
         sign[reacts2]=dat
         signl[reacts2]=dat
         signu[reacts2]=dat
-        
-        high=cleaned_mod1b%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        mod1_app=mod_ls[[as.numeric(input$var6)]]
+        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
         
         
         

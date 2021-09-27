@@ -1592,6 +1592,19 @@ lobstr::obj_size(cleaned_mod_STA_10YR)
 cleaned_mod_STA_10YR%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)*100
 cleaned_mod_STA_10YR%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)*100
 cleaned_mod_STA_10YR%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)*100
+#############################Data_managment#########################################
+
+rm(list=setdiff(ls(),ls()[grepl("cleaned_",ls())]))
+save.image("~/OneDrive - Universite de Montreal/Usydney/shiny_data.RData")
+load("~/Usydney/Atos/shinymodels.RData")
 
 
+mod_ls=list(mod_HU_1YR,mod_HU_5YR,mod_HU_10YR,
+          mod_STA_1YR,mod_STA_5YR,mod_STA_10YR,
+          mod_MTA_5YR,mod_MTA_10YR,
+          mod_LTA_10yr,
+          mod_OD_upto1YR,mod_OD_upto5YR,mod_OD_upto10YR)
+          
+            
+          
 
