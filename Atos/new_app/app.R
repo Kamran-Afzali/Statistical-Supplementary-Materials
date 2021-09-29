@@ -104,7 +104,7 @@ ui <- dashboardPage(
                         title = "InfoBox", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  htmlOutput("Box0")),
+                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box0")),
                         tabPanel("Risk factors", solidHeader = T,status = "warning",  tableOutput("Box1"))
                     ),
                     tabBox(
@@ -117,7 +117,7 @@ ui <- dashboardPage(
                     
                 ),
                 fluidRow(
-                    box(title = "Main risk factors", solidHeader = T, status = "primary", tableOutput("selected_var")),
+                    box(title = "Main risk factors", solidHeader = T, status = "primary", htmlOutput("selected_var")),
                     box(title = "Risk plot", solidHeader = T, status = "primary", plotOutput("plot"))
                 )   
         )
@@ -144,31 +144,51 @@ server <- function(input, output) {
     
     
 
-    output$Box0 <- renderUI({
+    output$Box0 <- renderValueBox({
+        
         dat=data()
-        vect=c( dat[1]==0,
-            dat[2]>0,
-            dat[3]>0,
-            dat[4]>0,
-            dat[5]>0,
-            dat[6]>0,
-            dat[7]<30,
-            dat[8]<13,
-            dat[9]<20,
-            dat[10]<17,
-            dat[11]<10
+        dat=t(dat)
+        colnames(dat)=reacts
+        dat=dummy_cols(dat, select_columns = "h0101b")
+        dat=dat[,colnames(dat)!='h0101b']
+        dat["first_inj_cat"]=as.numeric(1*(dat["first_inj_cat"]>17))
+        reacts2=colnames(dat)
+        sign[reacts2]=dat
+        signl[reacts2]=dat
+        signu[reacts2]=dat
+        mod1_app=mod_ls[[as.numeric(input$var6)]]
+        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        
+        valueBox(
+            paste0( round (high,2) , "%"), "Risk estimate",
+            color = "purple"
         )
-        HTML(paste0(name_reacts[vect], sep = '<br/>', collapse = ' '))
+        
+
     })
     
     output$Box1 <- renderTable({
+        # dat=data()
+        # dat=t(dat)
+        # colnames(dat)=reacts
+        # dat=dummy_cols(dat, select_columns = "h0101b")
+        # dat=dat[,colnames(dat)!='h0101b']
+        # dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        # dat
         dat=data()
         dat=t(dat)
         colnames(dat)=reacts
         dat=dummy_cols(dat, select_columns = "h0101b")
         dat=dat[,colnames(dat)!='h0101b']
         dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
-        dat
+        reacts2=colnames(dat)
+        sign[reacts2]=dat
+        signl[reacts2]=dat
+        signu[reacts2]=dat
+        
+        mattt=rbind(sign,signl,signu)
+        
+        return(mattt)
     })
     
     output$Box2 <- renderText({
@@ -205,26 +225,30 @@ server <- function(input, output) {
        paste(low,medd,high)
         
     })
-
-    output$selected_var <- renderTable({
+    
+    
+    
+    output$selected_var <- renderUI({
         dat=data()
-        dat=t(dat)
-        colnames(dat)=reacts
-        dat=dummy_cols(dat, select_columns = "h0101b")
-        dat=dat[,colnames(dat)!='h0101b']
-        dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
-        reacts2=colnames(dat)
-        sign[reacts2]=dat
-        signl[reacts2]=dat
-        signu[reacts2]=dat
-        
-        mattt=rbind(sign,signl,signu)
-        
-        return(mattt)
-        })
+        vect=c( dat[1]==1,
+                dat[2]>0,
+                dat[3]>0,
+                dat[4]>0,
+                dat[5]>0,
+                dat[6]>0,
+                dat[7]<30,
+                dat[8]<13,
+                dat[9]<20,
+                dat[10]<17,
+                dat[11]<10
+        )
+        HTML(paste0(name_reacts[vect], sep = '<br/>', collapse = ' '))
+    })
+
+
     output$plot <- renderPlot({
         dat=data()
-        vect=c( dat[1]==0,
+        vect=c( dat[1]==1,
                 dat[2]>0,
                 dat[3]>0,
                 dat[4]>0,
