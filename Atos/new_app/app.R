@@ -160,7 +160,7 @@ server <- function(input, output) {
         high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
         
         valueBox(
-            paste0( round (high,2) , "%"), "Risk estimate",
+            paste0( round (high,2)*100 , "%"), "Risk estimate",
             color = "purple"
         )
         
@@ -182,25 +182,42 @@ server <- function(input, output) {
         dat=dat[,colnames(dat)!='h0101b']
         dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
         reacts2=colnames(dat)
-        sign[reacts2]=dat
-        signl[reacts2]=dat
-        signu[reacts2]=dat
+        # sign[reacts2]=dat
+        # signl[reacts2]=dat
+        # signu[reacts2]=dat
+        # 
+        # mattt=rbind(sign,signl,signu)
         
-        mattt=rbind(sign,signl,signu)
-        
-        return(mattt)
+        return(dat)
     })
     
     output$Box2 <- renderText({
         dat=data()
+        
+
         dat=t(dat)
         colnames(dat)=reacts
         #dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
         dat=dummy_cols(dat, select_columns = "h0101b")
         dat=dat[,colnames(dat)!='h0101b']
-        dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
+        dat["first_inj_cat"]=1*(dat["first_inj_cat"]<17)
+        
+        vect=c( dat[1]==1,
+                dat[2]>0,
+                dat[3]>0,
+                dat[4]>0,
+                dat[5]>0,
+                dat[6]<30,
+                dat[7]<17,
+                dat[8]<20,
+                dat[9]>0,
+                dat[10]<10,
+                dat[11]>0
+        )
         reacts2=colnames(dat)
-        reacts2
+        
+
+        paste(c(reacts2,"________________________",reacts2[vect]))
     })
     
     output$Box3 <- renderText({
@@ -255,7 +272,7 @@ server <- function(input, output) {
                 dat[5]>0,
                 dat[6]>0,
                 dat[7]<30,
-                dat[8]<13,
+                dat[8]<17,
                 dat[9]<20,
                 dat[10]<17,
                 dat[11]<10

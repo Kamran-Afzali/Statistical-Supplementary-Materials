@@ -1592,6 +1592,29 @@ lobstr::obj_size(cleaned_mod_STA_10YR)
 cleaned_mod_STA_10YR%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)*100
 cleaned_mod_STA_10YR%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)*100
 cleaned_mod_STA_10YR%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)*100
+#####################logodds###########################################
+Data_merged%>%select(starts_with(reacts),Out_Comes[1])
+
+Out_Comes
+out="STA_1YR"
+df=Data_merged%>%
+  select(c(starts_with(reacts),out))
+df$STA_1YR=as.factor(df$STA_1YR)
+
+df$BLEVEREOD[is.na(df$BLEVEREOD)]=df$od1201[is.na(df$BLEVEREOD)]
+df <- recipe( ~ ., data = df) %>%
+  step_upsample(STA_1YR) %>%
+  prep(training = df) %>% bake(new_data = NULL)
+df$BLEVEREOD[is.na(df$BLEVEREOD)]=0
+df=df%>% 
+  drop_na()
+df=as.data.frame(df)
+glm(df[,16]~1,family = "binomial")$coefficients[1]
+for (i in 1:15) {
+  x=paste(out,colnames(df)[i], exp(glm(df[,16]~df[,i],family = "binomial")$coefficients[2]),sep=",")
+  print(x)
+}
+
 #############################Data_managment#########################################
 
 rm(list=setdiff(ls(),ls()[grepl("cleaned_",ls())]))
