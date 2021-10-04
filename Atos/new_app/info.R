@@ -1611,9 +1611,12 @@ df=df%>%
 df=as.data.frame(df)
 glm(df[,16]~1,family = "binomial")$coefficients[1]
 for (i in 1:15) {
-  x=paste(out,colnames(df)[i], exp(glm(df[,16]~df[,i],family = "binomial")$coefficients[2]),sep=",")
+  x=c(out,colnames(df)[i], exp(glm(df[,16]~df[,i],family = "binomial")$coefficients[2]))
   print(x)
 }
+
+
+
 
 #############################Data_managment#########################################
 

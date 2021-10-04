@@ -12,7 +12,7 @@ library(shinydashboard)
 library('fastDummies')
 library(tidyverse)
 library(haven)
-load("~/Usydney/Atos/shinymodels.RData")
+load("~/OneDrive - Universite de Montreal/Usydney/shiny_LR_data.RData")
 
 
 mod_ls=list(mod_HU_1YR,mod_HU_5YR,mod_HU_10YR,
@@ -111,7 +111,7 @@ ui <- dashboardPage(
                         title = "InfoBox2", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate2", solidHeader = T,status = "primary",  textOutput("Box2")),
+                        tabPanel("Risk estimate2", solidHeader = T,status = "primary",  valueBoxOutput("Box2")),
                         tabPanel("Risk factors2", solidHeader = T,status = "warning",  textOutput("Box3"))
                     )
                     
@@ -191,7 +191,7 @@ server <- function(input, output) {
         return(dat)
     })
     
-    output$Box2 <- renderText({
+    output$Box2 <- renderValueBox({
         dat=data()
         
 
@@ -215,9 +215,15 @@ server <- function(input, output) {
                 dat[11]>0
         )
         reacts2=colnames(dat)
-        
-
-        paste(c(reacts2,"________________________",reacts2[vect]))
+        reacts3=reacts2[vect]
+        mod1_app=mod_ls[[as.numeric(input$var6)]]
+        kmk=as.matrix(mod1_app$fit$beta)
+        kmj=exp(sum(kmk[rownames(kmk)%in%reacts3,ncol(kmk)]))
+        valueBox(
+            paste0( round (kmj,2)), "Odds of the outcome",
+            color = "yellow"
+        )
+        #paste(c(reacts2,"________________________",reacts3,"________________________",kmj))
     })
     
     output$Box3 <- renderText({
