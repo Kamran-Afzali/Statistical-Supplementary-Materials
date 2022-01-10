@@ -125,6 +125,8 @@ p=ggplot(df, aes(x, y, fill=z)) +      # map fill to the sum of x & y
   theme_bw()
 p+geom_point(aes(3, .5), shape = 23, colour = "black", fill = "red", size = 5, stroke = 5)+
   geom_errorbar(aes(x=3, ymin=.5-.1, ymax=.5+.1), width=.2) 
+ggplotly(p+geom_point(aes(3, .5), shape = 23, colour = "black", fill = "red", size = 5, stroke = 5)+
+           geom_errorbar(aes(x=3, ymin=.5-.1, ymax=.5+.1), width=.2) )
 ###################################Model_DEATH_10YR###################################
 out="DEATH_10YR"
 df=Data_merged%>%

@@ -1,0 +1,545 @@
+---
+title: Supplementary Materials"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: word_document
+
+---
+
+
+# Performance and Feature Importance Report
+
+## An overview of this report
+
+This report presents the performance and feature importance of prediction models of four outcomes:
+
+-   Past month heroin use
+-   Remission (long, medium, and short term)
+-   Overdose 
+-   Mortality
+
+
+```{r include=FALSE}
+library(haven)
+library(tidyverse)
+library(tidymodels)
+library(stacks)
+library(vip)
+library(pdp)
+library(sparkline)
+library(plotly)
+```
+
+## Past month heroin use  
+
+### HU_1YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/HU_1YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+
+
+
+
+ens_mod_pred%>% accuracy(truth = HU_1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_1YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+### HU_5YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/HU_5YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = HU_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_5YR, .pred_class))%>%
+  knitr::kable()
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### HU_10YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/HU_10YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = HU_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = HU_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = HU_10YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+## Remission  
+
+### STA_1YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/STA_1YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = STA_1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_1YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### STA_5YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/STA_5YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = STA_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_5YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### MTA_5YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/MTA_5YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = MTA_5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = MTA_5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = MTA_5YR, .pred_class))%>%
+  knitr::kable()
+
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### STA_10YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/STA_10YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = STA_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = STA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = STA_10YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### MTA_10YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/MTA_10YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = MTA_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = MTA_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = MTA_10YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### LTA_10yr
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/LTA_10yr_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = LTA_10yr, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = LTA_10yr, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = LTA_10yr, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+## OD  
+
+### OD_1YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/OD_upto1YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = OD_upto1YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto1YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto1YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### OD_5YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/OD_upto5YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = OD_upto5YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto5YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto5YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### OD_10YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/OD_upto10YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = OD_upto10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = OD_upto10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = OD_upto10YR, .pred_class))%>%
+  knitr::kable()
+
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+## Mortality  
+
+### DEATH_10YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/DEATH_10YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = DEATH_10YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = DEATH_10YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = DEATH_10YR, .pred_class))%>%
+  knitr::kable()
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```
+
+\newpage
+
+
+### DEATH_15YR
+```{r include=FALSE}
+load("~/Usydney/Atos/all_preds/DEATH_15YR_vips.RData")
+vips=vips%>% 
+  arrange(Variable)
+all(vips$Variable==c("alcohol_1","amphet_1","antidep_1","as01","aust_born","benzos_1","BLEVEREOD","bpd","cannabis_1","coke_1","CRIME_1","dailyh_1","dg0102","dg0103","dg0106","dg0112a","dp01j59","dp01j59a","dp401","first_heroin3","first_high_cat","first_inj_cat","h0101a","h0101b","h0104","hall_1","INTERPSNL_TRAUMA","MSIGOV1","od1201","othop_1","polysubs_1","prev_tmt","ptsddx","sev_dis_mcs01","sev_dis_pcs01","SEXUAL_TRAUMA","T1","T2","T3","T4","tobacco_1","trauma","unstablehousingBL"))
+vips$Variable=c("Past month alcohol use","Past month amphetamine use","Past month antidepressant use","ASPD","Australian born","Past month benzo use","Ever overdosed","Borderline Personality Disorder","Past month cannabis use","Past month cocaine use","Past month criminal activity","Daily use of heroin (past month)","Age","sex","Years of school completed","Prison history","Ever attempted suicide","Attempted suicide in past 12 months","Major depression","Age first used heroin <17","First got high >13yrs old","First injected >17yrs old","Age when first got high","Drug used for first high","Age when first used heroin","Past month hallucinogen use","Interpersonal trauma","Main source of income in past month government benefit","Overdosed since baseline","Past month other opiates use","Polysubstance use","Previous treatment","PTSD","Severe mental health disability","Severe physical health disability","Sexual trauma","Treatment_1","Treatment_2","Treatment_3","Treatment_4","Past month tobacco use","Trauma","Unstable housin")
+
+```
+
+#### Performance
+
+```{r fig.align="center", echo=FALSE}
+ens_mod_pred%>% accuracy(truth = DEATH_15YR, .pred_class)%>%
+  bind_rows(ens_mod_pred%>% sens(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% spec(truth = DEATH_15YR, .pred_class))%>%
+  bind_rows(ens_mod_pred%>% f_meas(truth = DEATH_15YR, .pred_class))%>%
+  knitr::kable()
+```
+
+#### Feature Importance
+
+```{r fig.align="center", echo=FALSE}
+p=ggplot(vips,aes(x=reorder(Variable, importance),y=importance))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = importance))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Predictor")+ ylab("Importance Rank")+ theme(legend.position = "none")
+
+ p
+rm(list = ls())
+```

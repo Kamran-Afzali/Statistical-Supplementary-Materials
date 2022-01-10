@@ -21,7 +21,59 @@ mod_ls=list(mod_HU_1YR,mod_HU_5YR,mod_HU_10YR,
             mod_LTA_10yr,
             mod_OD_upto1YR,mod_OD_upto5YR,mod_OD_upto10YR)
 
-# Define UI for application that draws a histogram
+jj=list()
+jj[[1]]=c(1,2,3)
+jj[[2]]=c(4,5,6)
+jj[[3]]=c(7,8)
+jj[[4]]=c(9)
+jj[[5]]=c(10,11,12)
+jj[[6]]=c(13,14)
+kk=c("HEROIN.USE_1_year","HEROIN.USE_5_year","HEROIN.USE_10_year","SHORT.TERM.ABSTINENCE_1_year","SHORT.TERM.ABSTINENCE_5_year","SHORT.TERM.ABSTINENCE_10_year","MEDIUM.TERM.ABSTINENCE_5_year","MEDIUM.TERM.ABSTINENCE_10_year","LONG.TERM.ABSTINENCE_10_year","OVERDOSE_1_year","OVERDOSE_5_year","OVERDOSE_10_year","MORTALITY_10_year","MORTALITY_15_year")
+ss=c("Risk","Protection","Protection","Protection","Risk","Risk")
+ttt=c("red","green","green","green","red","red")
+
+
+nfc=function(x,lenng,inpt){ nj=jj[[x]]
+kkk=c()
+p2=p
+for (i in nj) {
+    ii=(mean(c(nj))-i)/10
+    mod1_app= mod_ls[[i]]
+    l=mod1_app%>% predict(inpt, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)%>%mean()
+    ll=mod1_app%>% predict(inpt, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)%>%sd()
+    t=kk[i]
+    p2=p2+geom_point(aes_(lenng+ii, l), shape = 23, colour = "black", fill = i, size = 5, stroke = 5) + 
+         geom_errorbar(aes_(x=lenng+ii, ymin=l-ll, ymax=l+ll), width=.2) +
+         geom_text(aes_(x=lenng+1.75, y=l,label =t),parse = TRUE,check_overlap = TRUE)
+}
+p2
+}
+
+mfc=function(x,inpt){ 
+    nj=jj[[x]]
+    kkk=c()
+    p2=p
+    for (i in nj) {
+        mod1_app= mod_ls[[i]]
+        l=mod1_app%>% predict(inpt, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)%>%mean()
+        t=kk[i]
+        s=paste("risk for the outcome", t,"is", round(l*100,3), "%")
+        kkk=append(kkk,s)
+    }
+    kkk
+}
+
+lft=function(patt,dtff){
+    nnames=names(patt)
+    srs=dtff%>%select(nnames)
+    pat=c(patt%>%as.matrix())
+    coss=apply(srs, 1, function(x) {cosine(c(as.matrix(x)), pat)}) %>% as.data.frame()
+    cos_min=coss%>% top_n(5)%>% min()
+    dtff_cos=dtff[which(coss>=cos_min),]
+    dtff_cos[,nnames]=patt
+    dtff_cos
+}
+
 
 ui <- dashboardPage(
     dashboardHeader(title = "Risk Assessment"),
@@ -38,12 +90,12 @@ ui <- dashboardPage(
                     box(title = "Outcom", width = 12, solidHeader = T, status = "primary", 
                         selectInput("var6", 
                                     label = "Outcom",
-                                    choices = c("HEROIN.USE_1_year"=1, "HEROIN.USE_5_year"=2, "HEROIN.USE_10_year"=3, 
-                                                "SHORT.TERM.ABSTINENCE_1_year"=4,  "SHORT.TERM.ABSTINENC_5_year"=5,  "SHORT.TERM.ABSTINENCE_10_year"=6, 
-                                                "MEDIUM.TERM.ABSTINENCE_5_year"=7,"MEDIUM.TERM.ABSTINENCE_10_year"=8,
-                                                "LONG.TERM.ABSTINENCE_10_year"=9,
-                                                " OVERDOSE_1_year"=10, " OVERDOSE_5_year"=11, " OVERDOSE_10_year"=12,
-                                                "MORTALITY_10_year"=13, "MORTALITY_15_year"=14)
+                                    choices = c("HEROIN.USE"=1, 
+                                                "SHORT.TERM.ABSTINENCE"=2,  
+                                                "MEDIUM.TERM.ABSTINENCE"=3,
+                                                "LONG.TERM.ABSTINENCE"=4,
+                                                " OVERDOSE"=5, 
+                                                "MORTALITY"=6)
                                     
                         )),
                     box(title = "Risk factors", width = 4, solidHeader = T, status = "primary", 
@@ -104,15 +156,15 @@ ui <- dashboardPage(
                         title = "InfoBox", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box0")),
-                        tabPanel("Risk factors", solidHeader = T,status = "warning",  tableOutput("Box1"))
+                        tabPanel("Risk or Protection", solidHeader = T,status = "primary",  valueBoxOutput("Box0", width = 6))
+                        #,tabPanel("Risk factors", solidHeader = T,status = "warning",  tableOutput("Box1"))
                     ),
                     tabBox(
-                        title = "InfoBox2", width = 4, 
+                        title = "Estimate Box", width = 4, 
                         # The id lets us use input$tabset1 on the server to find the current tab
                         id = "tabset1", height = "250px",
-                        tabPanel("Risk estimate2", solidHeader = T,status = "primary",  valueBoxOutput("Box2")),
-                        tabPanel("Risk factors2", solidHeader = T,status = "warning",  textOutput("Box3"))
+                        tabPanel("Estimate", solidHeader = T,status = "primary",  valueBoxOutput("Box2"))
+                        #<tabPanel("Risk factors2", solidHeader = T,status = "warning",  textOutput("Box3"))
                     )
                     
                 ),
@@ -167,15 +219,17 @@ server <- function(input, output) {
         dat=dat[,colnames(dat)!='h0101b']
         dat["first_inj_cat"]=as.numeric(1*(dat["first_inj_cat"]>17))
         reacts2=colnames(dat)
-        sign[reacts2]=dat
-        signl[reacts2]=dat
-        signu[reacts2]=dat
-        mod1_app=mod_ls[[as.numeric(input$var6)]]
-        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
-        
+        # sign[reacts2]=dat
+        # signl[reacts2]=dat
+        # signu[reacts2]=dat
+        # mod1_app=mod_ls[[as.numeric(input$var6)]]
+        # high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        datt2=as.data.frame(dat)
+        fff=lft(datt2,df)
+        tixt=mfc(as.numeric(input$var6),fff)
         valueBox(
-            paste0( round (high,2)*100 , "%"), "Risk estimate",
-            color = "purple"
+            paste0( ss[as.numeric(input$var6)]), "is being evaluated",
+            color = ttt[as.numeric(input$var6)]
         )
         
 
@@ -196,13 +250,16 @@ server <- function(input, output) {
         dat=dat[,colnames(dat)!='h0101b']
         dat["first_inj_cat"]=1*(dat["first_inj_cat"]>17)
         reacts2=colnames(dat)
+        datt2=as.data.frame(dat)
+        fff=lft(datt2,df)
+        return(fff)
         # sign[reacts2]=dat
         # signl[reacts2]=dat
         # signu[reacts2]=dat
         # 
         # mattt=rbind(sign,signl,signu)
+        #
         
-        return(dat)
     })
     
     output$Box2 <- renderValueBox({
@@ -278,11 +335,16 @@ server <- function(input, output) {
         
         mod1_app=mod_ls[[as.numeric(input$var6)]]
         
-        low=mod1_app%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)
-        medd=mod1_app%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)
-        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)
-        
-        HTML(paste0(c("Please read the disclaimer",low,medd,high)  , sep = '<br/>', collapse = ' '))
+        # low=mod1_app%>% predict(signl, type="prob")%>%select(.pred_1)%>% round(.,4)
+        # medd=mod1_app%>% predict(sign, type="prob")%>%select(.pred_1)%>% round(.,4)
+        # high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)
+        datt2=as.data.frame(dat)
+        fff=lft(datt2,df)
+        rep_cont=c()
+        for (i in 1:5) {
+            rep_cont=append(rep_cont,mfc(i,fff))
+        }
+        HTML(paste0(c("Please read the disclaimer",rep_cont)  , sep = '<br/>', collapse = ' '))
         
     })
     
@@ -328,21 +390,24 @@ server <- function(input, output) {
         dat=dat[,colnames(dat)!='h0101b']
         dat["first_inj_cat"]=as.numeric(1*(dat["first_inj_cat"]>17))
         reacts2=colnames(dat)
-        sign[reacts2]=dat
-        signl[reacts2]=dat
-        signu[reacts2]=dat
-        mod1_app=mod_ls[[as.numeric(input$var6)]]
-        mod2_app=mod_ls[[as.numeric(input$var6)+1]]
-        mod3_app=mod_ls[[as.numeric(input$var6)+2]]
-        high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
-        high2=mod2_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
-        high3=mod3_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
-        
-        
-        
-        p+geom_point(aes(lenn, high), shape = 23, colour = "black", fill = "white", size = 5, stroke = 5)+
-        geom_point(aes(lenn, high2), shape = 23, colour = "blue", fill = "white", size = 5, stroke = 5)+
-        geom_point(aes(lenn, high3), shape = 23, colour = "red", fill = "white", size = 5, stroke = 5)
+        # sign[reacts2]=dat
+        # signl[reacts2]=dat
+        # signu[reacts2]=dat
+        datt2=as.data.frame(dat)
+        fff=lft(datt2,df)
+        nfc(as.numeric(input$var6),lenn,fff)
+        # mod1_app=mod_ls[[as.numeric(input$var6)]]
+        # mod2_app=mod_ls[[as.numeric(input$var6)+1]]
+        # mod3_app=mod_ls[[as.numeric(input$var6)+2]]
+        # high=mod1_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        # high2=mod2_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        # high3=mod3_app%>% predict(signu, type="prob")%>%select(.pred_1)%>% round(.,4)%>%pluck(1)
+        # 
+        # 
+        # 
+        # p+geom_point(aes(lenn, high), shape = 23, colour = "black", fill = "white", size = 5, stroke = 5)+
+        # geom_point(aes(lenn, high2), shape = 23, colour = "blue", fill = "white", size = 5, stroke = 5)+
+        # geom_point(aes(lenn, high3), shape = 23, colour = "red", fill = "white", size = 5, stroke = 5)
         
         
         
